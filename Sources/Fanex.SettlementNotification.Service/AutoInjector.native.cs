@@ -10,6 +10,8 @@ using ONEbook.UM.Helpers;
 using ONEbook.UM.Services;
 using ONEbook.UM.Transport;
 using Fanex.RemotingRef;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Internal;
 
 namespace Fanex.SettlementNotification.Service
 {
@@ -20,6 +22,7 @@ namespace Fanex.SettlementNotification.Service
             services.AddTransient<RefDataService, RefDataServiceImp>();
             services.AddTransient<IRemotingRefService, RemotingRefService>();
             services.AddTransient<MaintainanceService, MaintainanceServiceImp>();
+            services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
             services.AddSingleton<AutoNotificationController, AutoNotificationControllerImp>();
             services.AddSingleton<IDynamicRepository, DynamicRepository>();
             services.AddSingleton<ContentService, ContentServiceImp>();

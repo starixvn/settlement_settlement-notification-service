@@ -1,4 +1,6 @@
-﻿using SettlementNotification.Models;
+﻿using Fanex.Logging;
+using SettlementNotification.Models;
+using System;
 
 namespace SettlementNotification.Services
 {
@@ -41,6 +43,10 @@ namespace SettlementNotification.Services
                 var content = contentService.Content(notificationModel);
                 sendMessageService.Send(notificationModel.MessageGroupName, content);
                 queryService.UpdateFlag(notificationModel.MessageId);
+            }
+            catch (Exception ex)
+            {
+                LogService.Error("Exception in send notifications:", ex);
             }
             finally
             {
