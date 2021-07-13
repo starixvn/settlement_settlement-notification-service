@@ -12,6 +12,7 @@ using ONEbook.UM.Transport;
 using Fanex.RemotingRef;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Fanex.Caching.Redis;
 
 namespace Fanex.SettlementNotification.Service
 {
@@ -36,6 +37,19 @@ namespace Fanex.SettlementNotification.Service
             services.AddSingleton<ICacheService>(new CacheService());
             services.AddSingleton<LetstalkClientService, LetstalkClientServiceImp>();
             services.AddSingleton<SendMessageService, SendMessageServiceImp>();
+            ConfigureRedis(services, configuration);
+        }
+
+        private static void ConfigureRedis(IServiceCollection service, IConfiguration configuration)
+        {
+            var redisHost = configuration.GetSection("Redis.Server").Value;
+            var redisPort = configuration.GetSection("Redis.Port").Value;
+            var redisPassword = configuration.GetSection("Redis.Password").Value;
+            service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
+            {
+                ConnectionString = $"{redisHost}:{redisPort},password={redisPassword},defaultDatabase=11",
+                ApplicationName = configuration.GetSection("Redis.ApplicationName").Value,
+            }));
         }
     }
 }
