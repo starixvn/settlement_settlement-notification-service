@@ -25,6 +25,8 @@ namespace SettlementNotification.Models
 
         public int MessageGroupId { get; set; }
 
+        public bool IsTest { get; set; }
+
         public string MessageGroupName
         {
             get

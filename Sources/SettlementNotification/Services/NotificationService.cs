@@ -17,21 +17,17 @@ namespace SettlementNotification.Services
 
         private readonly SendMessageService sendMessageService;
 
-        private readonly ContentService contentService;
-
         private readonly NotificationPoolService notificationPoolService;
 
         public NotificationServiceImp(
             RefDataService refDataService,
             QueryService queryService,
             SendMessageService sendMessageService,
-            ContentService contentService,
             NotificationPoolService notificationPoolService)
         {
             this.refDataService = refDataService;
             this.queryService = queryService;
             this.sendMessageService = sendMessageService;
-            this.contentService = contentService;
             this.notificationPoolService = notificationPoolService;
         }
 
@@ -40,8 +36,7 @@ namespace SettlementNotification.Services
             try
             {
                 notificationModel.RefDataService = refDataService;
-                var content = contentService.Content(notificationModel);
-                sendMessageService.Send(notificationModel.MessageGroupName, content);
+                sendMessageService.Send(notificationModel);
                 queryService.UpdateFlag(notificationModel.MessageId);
             }
             catch (Exception ex)
