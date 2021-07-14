@@ -45,10 +45,12 @@ namespace SettlementNotification.Services
                     ? (from m in matches where m.LeagueId != leagueId select m).ToList()
                     : matches;
             }
-            else
+            else if (appSettingsKey.EnvironmentName.Equals("UAT"))
             {
                 return (from m in matches where m.LeagueId == leagueId select m).ToList();
             }
+
+            return matches;
         }
 
         public void UpdateFlag(int id)

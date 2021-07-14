@@ -2,5 +2,5 @@
 Action: @Model.ActionName
 League: @Model.LeagueName
 Match: [@Model.MatchId] @Model.HomeName - @Model.AwayName
-KO Time: @Model.KickOffTime
+KO Time: @Model.KickOffTime.ToString("MMM dd, yyyy hh:mm:ss tt")
 Message: [@Model.MessageId] - @Raw(Model.MessageContent)
