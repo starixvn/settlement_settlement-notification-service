@@ -24,7 +24,6 @@ namespace SettlementNotification.Services
         public void ProcessAsync()
         {
             var list = notificationPoolService.PeekNewItem();
-            //notificationService.Notify(list[0]);
             list.ForEach(m =>
             {
                 Task.Run(() => notificationService.Notify(m))

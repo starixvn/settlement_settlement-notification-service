@@ -13,6 +13,9 @@
     <None Remove="appsettings.SIT.json" />
     <None Remove="appsettings.UAT.json" />
     <None Remove="App_Data\SpName.LOCAL.xml" />
+    <None Remove="App_Data\SpName.PRO.xml" />
+    <None Remove="App_Data\SpName.SIT.xml" />
+    <None Remove="App_Data\SpName.UAT.xml" />
     <None Remove="App_Data\SpName.xml" />
     <None Remove="Templates\AlertTemplate.cshtml" />
   </ItemGroup>
@@ -31,6 +34,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\SpName.PRO.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\SpName.UAT.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\SpName.SIT.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="App_Data\SpName.LOCAL.xml">
