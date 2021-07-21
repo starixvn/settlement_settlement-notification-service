@@ -1,10 +1,8 @@
-﻿using System.Threading.Tasks;
-
-namespace SettlementNotification.Services
+﻿namespace SettlementNotification.Services
 {
     public interface AutoNotificationController
     {
-        void ProcessAsync();
+        void Process();
     }
 
     public class AutoNotificationControllerImp : AutoNotificationController
@@ -21,13 +19,12 @@ namespace SettlementNotification.Services
             this.notificationService = notificationService;
         }
 
-        public void ProcessAsync()
+        public void Process()
         {
             var list = notificationPoolService.PeekNewItem();
             list.ForEach(m =>
             {
-                Task.Run(() => notificationService.Notify(m))
-                    .ConfigureAwait(false);
+                notificationService.Notify(m);
             });
         }
     }

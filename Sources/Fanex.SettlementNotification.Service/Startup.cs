@@ -62,7 +62,7 @@ namespace Fanex.SettlementNotification.Service
         {
             try
             {
-                autoNotificationController.ProcessAsync();
+                autoNotificationController.Process();
                 HandleGarbageCollector();
             }
             catch (Exception exception)
