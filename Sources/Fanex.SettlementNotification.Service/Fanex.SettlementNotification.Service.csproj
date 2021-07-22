@@ -9,11 +9,11 @@
   <ItemGroup>
     <None Remove="appsettings.json" />
     <None Remove="appsettings.LOCAL.json" />
-    <None Remove="appsettings.PRO.json" />
+    <None Remove="appsettings.PROD.json" />
     <None Remove="appsettings.SIT.json" />
     <None Remove="appsettings.UAT.json" />
     <None Remove="App_Data\SpName.LOCAL.xml" />
-    <None Remove="App_Data\SpName.PRO.xml" />
+    <None Remove="App_Data\SpName.PROD.xml" />
     <None Remove="App_Data\SpName.SIT.xml" />
     <None Remove="App_Data\SpName.UAT.xml" />
     <None Remove="App_Data\SpName.xml" />
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="appsettings.PRO.json">
+    <Content Include="appsettings.PROD.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="appsettings.UAT.json">
@@ -36,7 +36,7 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="App_Data\SpName.PRO.xml">
+    <Content Include="App_Data\SpName.PROD.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="App_Data\SpName.UAT.xml">
