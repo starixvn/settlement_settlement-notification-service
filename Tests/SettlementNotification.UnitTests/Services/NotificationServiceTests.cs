@@ -1,0 +1,44 @@
+﻿using NSubstitute;
+using SettlementNotification.Models;
+using SettlementNotification.Services;
+using Xunit;
+
+namespace SettlementNotification.UnitTests.Services
+{
+    public class NotificationServiceTests
+    {
+        private readonly RefDataService refDataService;
+
+        private readonly QueryService queryService;
+
+        private readonly SendMessageService sendMessageService;
+
+        private readonly NotificationPoolService notificationPoolService;
+
+        private readonly NotificationService service;
+
+        public NotificationServiceTests()
+        {
+            refDataService = Substitute.For<RefDataService>();
+            queryService = Substitute.For<QueryService>();
+            sendMessageService = Substitute.For<SendMessageService>();
+            notificationPoolService = Substitute.For<NotificationPoolService>();
+            service = new NotificationServiceImp(refDataService, queryService, sendMessageService, notificationPoolService);
+        }
+
+        [Fact]
+        public void Notify_Always_CallAllMethods()
+        {
+            // Arrange
+            var model = new NotificationModel();
+
+            // Act
+            service.Notify(model);
+
+            // Assert
+            sendMessageService.Received(1).Send(model);
+            queryService.Received(1).UpdateFlag(model.MessageId);
+            notificationPoolService.Received(1).Remove(model.MessageId);
+        }
+    }
+}

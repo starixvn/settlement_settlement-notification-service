@@ -34,7 +34,7 @@ namespace Fanex.SettlementNotification.Service
         {
             running = true;
             var autoRefundThread = new Thread(ThreadProcess);
-            Console.WriteLine($"Auto Payout Other Sports Starting at { DateTime.Now }");
+            Console.WriteLine($"Starting at { DateTime.Now }");
             autoRefundThread.Start();
             return Task.CompletedTask;
         }
@@ -42,7 +42,7 @@ namespace Fanex.SettlementNotification.Service
         public Task StopAsync(CancellationToken cancellationToken)
         {
             running = false;
-            Console.WriteLine($"Auto Payout Other Sports Stopping at { DateTime.Now }");
+            Console.WriteLine($"Stopping at { DateTime.Now }");
             return Task.CompletedTask;
         }
 
