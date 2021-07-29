@@ -31,7 +31,7 @@ namespace SettlementNotification.Models
         {
             get
             {
-                return MessageGroupId == 1 ? "Instant Settlement" : string.Empty;
+                return MessageGroupId == 1 ? "Instant Settlement" : MessageGroupId == 2 ? "Settlement" : string.Empty;
             }
         }
 
