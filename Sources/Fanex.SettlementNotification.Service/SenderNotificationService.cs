@@ -9,19 +9,95 @@ using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
 using Fanex.RemotingRef;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using ONEbook.UM;
 using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Transport;
 using Sentry;
+using SettlementNotification.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Fanex.SettlementNotification.Service
 {
-    public partial class Startup
+    public class SenderNotificationService : IHostedService
     {
+        private readonly AutoNotificationController autoNotificationController;
+
+        private readonly MaintainanceService maintainanceService;
+
+        public readonly IConfiguration configuration;
+
+        private bool running;
+
+        private int counter;
+
+        public SenderNotificationService(IConfiguration configuration, MaintainanceService maintainanceService, AutoNotificationController autoNotificationController)
+        {
+            this.configuration = configuration;
+            this.maintainanceService = maintainanceService;
+            this.autoNotificationController = autoNotificationController;
+
+            StartUMSetting();
+            ConfigureFanex();
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            running = true;
+            var thread = new Thread(ThreadProcess);
+            Console.WriteLine($"Starting at { DateTime.Now }");
+            thread.Start();
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            running = false;
+            Console.WriteLine($"Stopping at { DateTime.Now }");
+            return Task.CompletedTask;
+        }
+
+        private void ThreadProcess()
+        {
+            while (running)
+            {
+                if (!maintainanceService.IsMaintainance)
+                {
+                    MainProcess();
+                    Thread.Sleep(int.Parse(configuration.GetSection("ServiceInterval").Value));
+                }
+            }
+        }
+
+        private void MainProcess()
+        {
+            try
+            {
+                autoNotificationController.Process();
+                HandleGarbageCollector();
+            }
+            catch (Exception exception)
+            {
+                LogService.Error("Exception in main thread - Process:", exception);
+            }
+        }
+
+        private void HandleGarbageCollector()
+        {
+            if (counter >= int.Parse(configuration.GetSection("GarbageCollectorInterval").Value))
+            {
+                counter = 0;
+                GC.WaitForPendingFinalizers();
+            }
+
+            counter += int.Parse(configuration.GetSection("ServiceInterval").Value);
+        }
+
         private void StartUMSetting()
         {
             var umConfig = new UMClientConfiguration().Initialize(configuration);

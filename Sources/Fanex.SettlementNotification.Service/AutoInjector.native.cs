@@ -10,8 +10,6 @@ using ONEbook.UM.Helpers;
 using ONEbook.UM.Services;
 using ONEbook.UM.Transport;
 using Fanex.RemotingRef;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Fanex.Caching.Redis;
 
 namespace Fanex.SettlementNotification.Service

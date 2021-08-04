@@ -22,7 +22,5 @@ RUN sed -i 's/MinProtocol = TLSv1.2/MinProtocol = TLSv1/g' /usr/lib/ssl/openssl.
 WORKDIR /app
 
 COPY --from=builder /app .
-# Open up port
-EXPOSE 5000
 
 ENTRYPOINT ["dotnet", "Fanex.SettlementNotification.Service.dll"]

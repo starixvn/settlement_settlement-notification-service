@@ -1,6 +1,7 @@
-﻿Message type: @Model.MessageType
-Action: @(Raw(@Model.ActionName)).
+﻿﻿@using RazorEngine.Text
+Message type: @Model.MessageType
+Action: @(new RawString(Model.ActionName)).
 League: @(Model.LeagueName).
 Match: [@Model.MatchId] @Model.HomeName - @(Model.AwayName).
 KO Time: @(Model.KickOffTime.ToString("MMM dd, yyyy hh:mm:ss tt")).
-Message: [@Model.MessageId] - @(Raw(Model.MessageContent)).
+Message: [@Model.MessageId] - @(new RawString(Model.MessageContent)).
