@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore;
 
 namespace Fanex.SettlementNotification.Service
 {
@@ -12,8 +14,10 @@ namespace Fanex.SettlementNotification.Service
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-       Host.CreateDefaultBuilder(args)
+        public static IWebHostBuilder CreateHostBuilder(string[] args) =>
+       WebHost.CreateDefaultBuilder(args)
+           .UseStartup<Startup>()
+
            .ConfigureServices((hostContext, services) =>
            {
                services
@@ -21,6 +25,6 @@ namespace Fanex.SettlementNotification.Service
                .AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettingsKey>>().Value);
                services.AddHostedService<Startup>();
                services.ConfigInternalService(hostContext.Configuration);
-           }).UseSystemd();
+           });
     }
 }

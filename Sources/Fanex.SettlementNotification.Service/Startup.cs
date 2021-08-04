@@ -5,6 +5,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Fanex.Logging;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fanex.SettlementNotification.Service
 {
@@ -33,9 +36,9 @@ namespace Fanex.SettlementNotification.Service
         public Task StartAsync(CancellationToken cancellationToken)
         {
             running = true;
-            var autoRefundThread = new Thread(ThreadProcess);
+            var thread = new Thread(ThreadProcess);
             Console.WriteLine($"Starting at { DateTime.Now }");
-            autoRefundThread.Start();
+            thread.Start();
             return Task.CompletedTask;
         }
 
@@ -80,6 +83,32 @@ namespace Fanex.SettlementNotification.Service
             }
 
             counter += int.Parse(configuration.GetSection("ServiceInterval").Value);
+        }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddHealthChecks();
+            services.AddControllers();
+            services.AddRazorPages();
+        }
+
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            app.UseRouting();
+
+            app.UseHealthChecks("/health");
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

@@ -23,7 +23,6 @@ namespace Fanex.SettlementNotification.Service
             services.AddTransient<RefDataService, RefDataServiceImp>();
             services.AddTransient<IRemotingRefService, RemotingRefService>();
             services.AddTransient<MaintainanceService, MaintainanceServiceImp>();
-            services.AddSingleton<IHostingEnvironment, HostingEnvironment>();
             services.AddSingleton<AutoNotificationController, AutoNotificationControllerImp>();
             services.AddSingleton<IDynamicRepository, DynamicRepository>();
             services.AddSingleton<ContentService, ContentServiceImp>();
