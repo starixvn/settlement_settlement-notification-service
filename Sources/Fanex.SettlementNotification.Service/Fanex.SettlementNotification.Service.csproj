@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <CodeAnalysisRuleSet>..\..\.sonarlint\settlement-notification-servicecsharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="..\..\.sonarlint\settlement-notification-service\CSharp\SonarLint.xml" Link="SonarLint.xml" />
     <Content Include="appsettings.json" />
     <Content Include="appsettings.LOCAL.json" />
     <Content Include="appsettings.PROD.json" />
