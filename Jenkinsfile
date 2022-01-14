@@ -15,7 +15,7 @@ pipeline {
     stage('Build') {
       steps {        
         script{
-          pipelineLib.beginSonarQubeForMsBuild("Settlement-Notification-Service", "Olympus /  Settlement Notification Service", "/d:sonar.cs.opencover.reportsPaths=%WORKSPACE%\\CoverageReports\\*.xml /d:sonar.cs.vstest.reportsPaths=%WORKSPACE%\\TestResults\\*.trx")
+          pipelineLib.beginSonarQubeForMsBuild("Settlement-Notification-Service", "Olympus /  Settlement Notification Service", "/d:sonar.cs.opencover.reportsPaths=%WORKSPACE%\\CoverageReports\\*.xml /d:sonar.exclusions=**/*.native.*,**/*Criteria.*,**/Models/*.cs,**/Constants/*.cs,**/*.xml /d:sonar.cs.vstest.reportsPaths=%WORKSPACE%\\TestResults\\*.trx")
 
           pipelineLib.msBuild16("Fanex.SettlementNotification.Service.sln")
         }

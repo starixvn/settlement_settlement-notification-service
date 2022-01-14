@@ -31,7 +31,14 @@ namespace SettlementNotification.Models
         {
             get
             {
-                return MessageGroupId == 1 ? "Instant Settlement" : MessageGroupId == 2 ? "Settlement" : string.Empty;
+                const int instantSettlement = 1;
+                const int settlement = 2;
+                return MessageGroupId switch
+                {
+                    instantSettlement => "Instant Settlement",
+                    settlement => "Settlement",
+                    _ => string.Empty
+                };
             }
         }
 

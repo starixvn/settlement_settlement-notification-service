@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
-using ONEbook.UM.Services;
 using ONEbook.UM.Transport;
 using Fanex.RemotingRef;
 using Fanex.Caching.Redis;
@@ -20,7 +19,7 @@ namespace Fanex.SettlementNotification.Service
         {
             services.AddTransient<RefDataService, RefDataServiceImp>();
             services.AddTransient<IRemotingRefService, RemotingRefService>();
-            services.AddTransient<MaintainanceService, MaintainanceServiceImp>();
+            services.AddTransient<IMaintenanceService, MaintenanceServiceImp>();
             services.AddSingleton<AutoNotificationController, AutoNotificationControllerImp>();
             services.AddSingleton<IDynamicRepository, DynamicRepository>();
             services.AddSingleton<ContentService, ContentServiceImp>();
@@ -30,7 +29,7 @@ namespace Fanex.SettlementNotification.Service
             services.AddSingleton(new UMClientConfiguration().Initialize(configuration));
             services.AddSingleton<IUMCacheService, UMCacheService>();
             services.AddSingleton<IUMRestClient, UMRestClient>();
-            services.AddSingleton<IMaintenanceService, MaintenanceService>();
+            services.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
             services.AddSingleton<ICacheService>(new CacheService());
             services.AddSingleton<LetstalkClientService, LetstalkClientServiceImp>();
             services.AddSingleton<SendMessageService, SendMessageServiceImp>();

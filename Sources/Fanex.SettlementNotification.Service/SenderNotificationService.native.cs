@@ -28,21 +28,21 @@ namespace Fanex.SettlementNotification.Service
     {
         private readonly AutoNotificationController autoNotificationController;
 
-        private readonly MaintainanceService maintainanceService;
+        private readonly IMaintenanceService maintenanceService;
 
-        public readonly IConfiguration configuration;
+        private readonly IConfiguration configuration;
 
         private bool running;
 
         private int counter;
 
-        public SenderNotificationService(IConfiguration configuration, MaintainanceService maintainanceService, AutoNotificationController autoNotificationController)
+        public SenderNotificationService(IConfiguration configuration, IMaintenanceService maintenanceService, AutoNotificationController autoNotificationController)
         {
             this.configuration = configuration;
-            this.maintainanceService = maintainanceService;
+            this.maintenanceService = maintenanceService;
             this.autoNotificationController = autoNotificationController;
 
-            StartUMSetting();
+            StartUmSetting();
             ConfigureFanex();
         }
 
@@ -66,7 +66,7 @@ namespace Fanex.SettlementNotification.Service
         {
             while (running)
             {
-                if (!maintainanceService.IsMaintainance)
+                if (!maintenanceService.IsMaintenance)
                 {
                     MainProcess();
                     Thread.Sleep(int.Parse(configuration.GetSection("ServiceInterval").Value));
@@ -98,7 +98,7 @@ namespace Fanex.SettlementNotification.Service
             counter += int.Parse(configuration.GetSection("ServiceInterval").Value);
         }
 
-        private void StartUMSetting()
+        private void StartUmSetting()
         {
             var umConfig = new UMClientConfiguration().Initialize(configuration);
 

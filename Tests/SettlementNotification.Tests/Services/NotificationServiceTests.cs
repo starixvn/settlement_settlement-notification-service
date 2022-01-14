@@ -16,16 +16,6 @@ namespace SettlementNotification.Tests.Services
 {
     public class NotificationServiceTests
     {
-        private readonly RefDataService refDataService;
-
-        private readonly QueryService queryService;
-
-        private readonly SendMessageService sendMessageService;
-
-        private readonly NotificationPoolService notificationPoolService;
-
-        private readonly LetstalkClientService letstalkClientService;
-
         private readonly NotificationService service;
 
         public NotificationServiceTests()
@@ -36,9 +26,9 @@ namespace SettlementNotification.Tests.Services
               .FromApplication("Settlement");
 
             var remotingRefService = new RemotingRefService();
-            refDataService = new RefDataServiceImp(remotingRefService);
-            queryService = Substitute.For<QueryService>();
-            notificationPoolService = Substitute.For<NotificationPoolService>();
+            var refDataService = new RefDataServiceImp(remotingRefService);
+            var queryService = Substitute.For<QueryService>();
+            var notificationPoolService = Substitute.For<NotificationPoolService>();
             var contentService = new ContentServiceImp();
             var settings = new AppSettingsKey()
             {
@@ -47,11 +37,11 @@ namespace SettlementNotification.Tests.Services
                 LetstalkTestGroup = "Settlement-Notification-Test",
                 EnvironmentName = "LOCAL",
             };
-            IOptions<AppSettingsKey> appSettingskey = Options.Create(settings);
+            var appSettingskey = Options.Create(settings);
 
-            letstalkClientService = new LetstalkClientServiceImp();
+            var letstalkClientService = new LetstalkClientServiceImp();
 
-            sendMessageService = new SendMessageServiceImp(contentService, letstalkClientService, appSettingskey);
+            var sendMessageService = new SendMessageServiceImp(contentService, letstalkClientService, appSettingskey);
 
             service = new NotificationServiceImp(refDataService, queryService, sendMessageService, notificationPoolService);
         }

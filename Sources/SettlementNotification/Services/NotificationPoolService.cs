@@ -26,13 +26,8 @@ namespace SettlementNotification.Services
             lockObject = new object();
         }
 
-        public List<NotificationModel> PoolOfNotification
-        {
-            get
-            {
-                return poolOfNotification;
-            }
-        }
+        public List<NotificationModel> PoolOfNotification => poolOfNotification;
+        
 
         public List<NotificationModel> PeekNewItem()
         {

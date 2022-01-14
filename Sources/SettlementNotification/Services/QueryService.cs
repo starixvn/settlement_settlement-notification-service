@@ -39,18 +39,17 @@ namespace SettlementNotification.Services
 
             cache.TryGet(KEY_LEAGUEID, out int leagueId);
 
-            if (appSettingsKey.EnvironmentName.Equals("PRO"))
+            switch (appSettingsKey.EnvironmentName)
             {
-                return leagueId > 0
-                    ? (from m in matches where m.LeagueId != leagueId select m).ToList()
-                    : matches;
+                case "PRO":
+                    return leagueId > 0
+                        ? (from m in matches where m.LeagueId != leagueId select m).ToList()
+                        : matches;
+                case "UAT":
+                    return (from m in matches where m.LeagueId == leagueId select m).ToList();
+                default:
+                    return matches;
             }
-            else if (appSettingsKey.EnvironmentName.Equals("UAT"))
-            {
-                return (from m in matches where m.LeagueId == leagueId select m).ToList();
-            }
-
-            return matches;
         }
 
         public void UpdateFlag(int id)
