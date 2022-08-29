@@ -96,4 +96,5 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1prod_1json__JsonSchema="https://beaujs.com/schema.json" /></VisualStudio></ProjectExtensions>
 </Project>

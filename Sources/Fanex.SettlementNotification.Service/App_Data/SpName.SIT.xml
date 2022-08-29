@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Functions>
   <Function Name="AutoPayout">
-    <Setting Key="NAP_Set_LetstalkMessage_Select" SpName="NAP_Set_LetstalkMessage_Select_xpre" DbName="DBTXN.bodb02.bodbAdminNet" />
-    <Setting Key="NAP_Set_LetstalkMessage_Update" SpName="NAP_Set_LetstalkMessage_Update_xpre" DbName="DBTXN.bodb02.bodbAdminNet" />
+    <Setting Key="NAP_Set_LetstalkMessage_Select" SpName="NAP_Set_LetstalkMessage_Select" DbName="DBTXN.bodb02.bodbAdminNet" />
+    <Setting Key="NAP_Set_LetstalkMessage_Update" SpName="NAP_Set_LetstalkMessage_Update" DbName="DBTXN.bodb02.bodbAdminNet" />
   </Function>
 </Functions>
