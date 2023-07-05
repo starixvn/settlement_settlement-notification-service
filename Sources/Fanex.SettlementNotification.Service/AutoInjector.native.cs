@@ -1,52 +1,51 @@
-﻿using SettlementNotification.Services;
-using Fanex.Caching;
+﻿using Fanex.Caching;
+using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
 using Fanex.LetstalkService.Client;
+using Fanex.RemotingRef;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
-using Fanex.RemotingRef;
-using Fanex.Caching.Redis;
+using SettlementNotification.Services;
 
-namespace Fanex.SettlementNotification.Service
+namespace Fanex.SettlementNotification.Service;
+
+public static class AutoInjector
 {
-    public static class AutoInjector
+    public static void ConfigInternalService(this IServiceCollection services, IConfiguration configuration)
     {
-        public static void ConfigInternalService(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddTransient<RefDataService, RefDataServiceImp>();
-            services.AddTransient<IRemotingRefService, RemotingRefService>();
-            services.AddTransient<IMaintenanceService, MaintenanceServiceImp>();
-            services.AddSingleton<AutoNotificationController, AutoNotificationControllerImp>();
-            services.AddSingleton<IDynamicRepository, DynamicRepository>();
-            services.AddSingleton<ContentService, ContentServiceImp>();
-            services.AddSingleton<NotificationService, NotificationServiceImp>();
-            services.AddSingleton<NotificationPoolService, NotificationPoolServiceImp>();
-            services.AddSingleton<QueryService, QueryServiceImp>();
-            services.AddSingleton(new UMClientConfiguration().Initialize(configuration));
-            services.AddSingleton<IUMCacheService, UMCacheService>();
-            services.AddSingleton<IUMRestClient, UMRestClient>();
-            services.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
-            services.AddSingleton<ICacheService>(new CacheService());
-            services.AddSingleton<LetstalkClientService, LetstalkClientServiceImp>();
-            services.AddSingleton<SendMessageService, SendMessageServiceImp>();
-            ConfigureRedis(services, configuration);
-        }
+        services.AddTransient<RefDataService, RefDataServiceImp>();
+        services.AddTransient<IRemotingRefService, RemotingRefService>();
+        services.AddTransient<IMaintenanceService, MaintenanceServiceImp>();
+        services.AddSingleton<AutoNotificationController, AutoNotificationControllerImp>();
+        services.AddSingleton<IDynamicRepository, DynamicRepository>();
+        services.AddSingleton<ContentService, ContentServiceImp>();
+        services.AddSingleton<NotificationService, NotificationServiceImp>();
+        services.AddSingleton<NotificationPoolService, NotificationPoolServiceImp>();
+        services.AddSingleton<QueryService, QueryServiceImp>();
+        services.AddSingleton(new UMClientConfiguration().Initialize(configuration));
+        services.AddSingleton<IUMCacheService, UMCacheService>();
+        services.AddSingleton<IUMRestClient, UMRestClient>();
+        services.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
+        services.AddSingleton<ICacheService>(new CacheService());
+        services.AddSingleton<LetstalkClientService, LetstalkClientServiceImp>();
+        services.AddSingleton<SendMessageService, SendMessageServiceImp>();
+        ConfigureRedis(services, configuration);
+    }
 
-        private static void ConfigureRedis(IServiceCollection service, IConfiguration configuration)
+    private static void ConfigureRedis(IServiceCollection service, IConfiguration configuration)
+    {
+        var redisHost = configuration.GetSection("Redis.Server").Value;
+        var redisPort = configuration.GetSection("Redis.Port").Value;
+        var redisPassword = configuration.GetSection("Redis.Password").Value;
+        var redisDatabase = configuration.GetSection("Redis.DefaultDatabase").Value;
+        service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
-            var redisHost = configuration.GetSection("Redis.Server").Value;
-            var redisPort = configuration.GetSection("Redis.Port").Value;
-            var redisPassword = configuration.GetSection("Redis.Password").Value;
-            var redisDatabase = configuration.GetSection("Redis.DefaultDatabase").Value;
-            service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
-            {
-                ConnectionString = $"{redisHost}:{redisPort},password={redisPassword},defaultDatabase={redisDatabase}",
-                ApplicationName = configuration.GetSection("Redis.ApplicationName").Value,
-            }));
-        }
+            ConnectionString = $"{redisHost}:{redisPort},password={redisPassword},defaultDatabase={redisDatabase}",
+            ApplicationName = configuration.GetSection("Redis.ApplicationName").Value,
+        }));
     }
 }

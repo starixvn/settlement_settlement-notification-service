@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Templates\**" />
+    <EmbeddedResource Remove="Templates\**" />
+    <None Remove="Templates\**" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\Sources\Fanex.SettlementNotification.Service\appsettings.json" Link="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -21,15 +27,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Sources\SettlementNotification\SettlementNotification.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Templates\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\..\Sources\Fanex.SettlementNotification.Service\Templates\AlertTemplate.cshtml" Link="Templates\AlertTemplate.cshtml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>

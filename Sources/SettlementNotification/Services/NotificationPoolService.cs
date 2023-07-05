@@ -1,53 +1,49 @@
-﻿using SettlementNotification.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using SettlementNotification.Models;
 
-namespace SettlementNotification.Services
+namespace SettlementNotification.Services;
+
+public interface NotificationPoolService
 {
-    public interface NotificationPoolService
-    {
-        List<NotificationModel> PeekNewItem();
+    List<NotificationModel> PeekNewItem();
 
-        void Remove(int id);
+    void Remove(int id);
+}
+
+public class NotificationPoolServiceImp : NotificationPoolService
+{
+    private readonly QueryService queryService;
+
+    private readonly object lockObject;
+
+    public NotificationPoolServiceImp(QueryService queryService)
+    {
+        this.queryService = queryService;
+        PoolOfNotification = new List<NotificationModel>();
+        lockObject = new object();
     }
 
-    public class NotificationPoolServiceImp : NotificationPoolService
+    public List<NotificationModel> PoolOfNotification { get; set; }
+
+    public List<NotificationModel> PeekNewItem()
     {
-        private readonly QueryService queryService;
+        var list = queryService.GetAllMessageByEnv();
 
-        private readonly List<NotificationModel> poolOfNotification;
-
-        private readonly object lockObject;
-
-        public NotificationPoolServiceImp(QueryService queryService)
+        lock (lockObject)
         {
-            this.queryService = queryService;
-            poolOfNotification = new List<NotificationModel>();
-            lockObject = new object();
+            var newNotification = list.Except(PoolOfNotification).ToList();
+            PoolOfNotification.AddRange(newNotification);
+
+            return newNotification;
         }
+    }
 
-        public List<NotificationModel> PoolOfNotification => poolOfNotification;
-        
-
-        public List<NotificationModel> PeekNewItem()
+    public void Remove(int id)
+    {
+        lock (lockObject)
         {
-            var list = queryService.GetAllMessage();
-
-            lock (lockObject)
-            {
-                var newNotification = list.Except(poolOfNotification).ToList();
-                poolOfNotification.AddRange(newNotification);
-
-                return newNotification;
-            }
-        }
-
-        public void Remove(int id)
-        {
-            lock (lockObject)
-            {
-                poolOfNotification.RemoveAll(m => m.MessageId == id);
-            }
+            PoolOfNotification.RemoveAll(m => m.MessageId == id);
         }
     }
 }

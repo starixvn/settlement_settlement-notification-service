@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -10,14 +10,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fanex.Caching" Version="2.2.2" />
+    <PackageReference Include="Fanex.Caching" Version="2.2.3" />
+    <PackageReference Include="Fanex.Caching.Redis" Version="2.2.3" />
     <PackageReference Include="Fanex.Data.Repository" Version="4.2.2" />
-    <PackageReference Include="Fanex.LetstalkService.Client" Version="1.0.0.14" />
+    <PackageReference Include="Fanex.LetstalkService.Client" Version="1.0.0.19" />
     <PackageReference Include="Fanex.Logging" Version="2.0.1" />
-    <PackageReference Include="Fanex.RemotingRef" Version="1.5.0" />
+    <PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />
+    <PackageReference Include="Fanex.RemotingRef" Version="1.5.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
-    <PackageReference Include="ONEbook.UM" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="ONEbook.UM" Version="3.1.4" />
     <PackageReference Include="RazorEngine.NetCore" Version="3.1.0" />
   </ItemGroup>
 

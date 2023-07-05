@@ -1,32 +1,29 @@
-using Microsoft.AspNetCore.Hosting;
+using Fanex.SettlementNotification.Service;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using SettlementNotification.Models;
 
-namespace Fanex.SettlementNotification.Service
-{
-    public static class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseUrls($"http://0.0.0.0:5000");
-                    webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services
-                   .Configure<AppSettingsKey>(hostContext.Configuration)
-                   .AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettingsKey>>().Value);
-                    services.AddHostedService<SenderNotificationService>();
-                    services.ConfigInternalService(hostContext.Configuration);
-                });
-    }
-}
+services.Configure<AppSettingsKey>(builder.Configuration)
+    .AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettingsKey>>().Value);
+
+services.ConfigInternalService(builder.Configuration);
+
+services.AddHostedService<SenderNotificationService>();
+
+var app = builder.Build();
+
+app.MapGet("/", async context =>
+{
+    await context.Response.WriteAsync("Fanex.SettlementNotification.Service");
+});
+
+#if DEBUG
+app.Run();
+#else
+await app.RunAsync("http://0.0.0.0:5000");
+#endif

@@ -1,61 +1,62 @@
-﻿using SettlementNotification.Criteria;
-using SettlementNotification.Models;
-using Fanex.Data.Repository;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Fanex.Caching;
+using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
+using SettlementNotification.Criteria;
+using SettlementNotification.Models;
 
-namespace SettlementNotification.Services
+namespace SettlementNotification.Services;
+
+public interface QueryService
 {
-    public interface QueryService
-    {
-        List<NotificationModel> GetAllMessage();
+    List<NotificationModel> GetAllMessageByEnv();
 
-        void UpdateFlag(int id);
+    void UpdateFlag(int id);
+}
+
+public class QueryServiceImp : QueryService
+{
+    private const string KeyLeagueId = "Settlement-AutoPayout-AutoInstant-LeagueId";
+
+    private readonly ICache cache;
+
+    private readonly AppSettingsKey appSettingsKey;
+
+    private readonly IDynamicRepository repository;
+
+    public QueryServiceImp(IDynamicRepository repository, ICache cache, IOptions<AppSettingsKey> appSettingsKey)
+    {
+        this.repository = repository;
+        this.cache = cache;
+        this.appSettingsKey = appSettingsKey.Value;
     }
 
-    public class QueryServiceImp : QueryService
+    public List<NotificationModel> GetAllMessageByEnv()
     {
-        private const string KEY_LEAGUEID = "Settlement-AutoPayout-AutoInstant-LeagueId";
+        var matches = GetAllMessage();
 
-        private readonly ICache cache;
+        cache.TryGet(KeyLeagueId, out int leagueId);
 
-        private readonly AppSettingsKey appSettingsKey;
-
-        private readonly IDynamicRepository repository;
-
-        public QueryServiceImp(IDynamicRepository repository, ICache cache, IOptions<AppSettingsKey> appSettingsKey)
+        return appSettingsKey.EnvironmentName switch
         {
-            this.repository = repository;
-            this.cache = cache;
-            this.appSettingsKey = appSettingsKey.Value;
-        }
+            "PRO" => leagueId > 0 ? (matches.Where(m => m.LeagueId != leagueId)).ToList() : matches,
+            "UAT" => (matches.Where(m => m.LeagueId == leagueId)).ToList(),
+            _ => matches
+        };
+    }
 
-        public List<NotificationModel> GetAllMessage()
-        {
-            var criteria = new GetAllMessageCriteria();
-            var matches = repository.Fetch<NotificationModel>(criteria).ToList();
+    public void UpdateFlag(int id)
+    {
+        var criteria = new UpdateFlagCriteria { MessageId = id };
+        repository.Execute(criteria);
+    }
 
-            cache.TryGet(KEY_LEAGUEID, out int leagueId);
+    private List<NotificationModel> GetAllMessage()
+    {
+        var criteria = new GetAllMessageCriteria();
+        var matches = repository.Fetch<NotificationModel>(criteria);
 
-            switch (appSettingsKey.EnvironmentName)
-            {
-                case "PRO":
-                    return leagueId > 0
-                        ? (from m in matches where m.LeagueId != leagueId select m).ToList()
-                        : matches;
-                case "UAT":
-                    return (from m in matches where m.LeagueId == leagueId select m).ToList();
-                default:
-                    return matches;
-            }
-        }
-
-        public void UpdateFlag(int id)
-        {
-            var criteria = new UpdateFlagCriteria { MessageId = id };
-            repository.Execute(criteria);
-        }
+        return matches.ToList();
     }
 }

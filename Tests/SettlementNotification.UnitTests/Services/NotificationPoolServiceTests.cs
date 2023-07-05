@@ -1,54 +1,53 @@
-﻿using NSubstitute;
+﻿using System.Collections.Generic;
+using System.Linq;
+using NSubstitute;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
-namespace SettlementNotification.UnitTests.Services
+namespace SettlementNotification.UnitTests.Services;
+
+public class NotificationPoolServiceTests
 {
-    public class NotificationPoolServiceTests
+    private readonly QueryService queryService;
+
+    public NotificationPoolServiceTests()
     {
-        private readonly QueryService queryService;
+        queryService = Substitute.For<QueryService>();
+    }
 
-        public NotificationPoolServiceTests()
-        {
-            queryService = Substitute.For<QueryService>();
-        }
+    private List<NotificationModel> CreateMessage(params int[] messageIds)
+    {
+        return messageIds.Select(i => new NotificationModel { MessageId = i }).ToList();
+    }
 
-        private List<NotificationModel> CreateMessage(params int[] messageIds)
-        {
-            return messageIds.Select(i => new NotificationModel { MessageId = i }).ToList();
-        }
+    [Fact]
+    public void PeekNewItem_Twice_OnlyAddNewMessageToPool()
+    {
+        var service = new NotificationPoolServiceImp(queryService);
+        queryService.GetAllMessageByEnv().Returns(CreateMessage(1, 3));
+        service.PeekNewItem();
 
-        [Fact]
-        public void PeekNewItem_Twice_OnlyAddNewMessageToPool()
-        {
-            var service = new NotificationPoolServiceImp(queryService);
-            queryService.GetAllMessage().Returns(CreateMessage(1, 3));
-            service.PeekNewItem();
+        queryService.GetAllMessageByEnv().Returns(CreateMessage(2, 3));
+        var items = service.PeekNewItem();
 
-            queryService.GetAllMessage().Returns(CreateMessage(2, 3));
-            var items = service.PeekNewItem();
+        Assert.Equal(3, service.PoolOfNotification.Count);
+        Assert.Single(items);
+    }
 
-            Assert.Equal(3, service.PoolOfNotification.Count);
-            Assert.Single(items);
-        }
+    [Fact]
+    public void Remove_ExistedMessageId_ReturnOneNotificationOnPool()
+    {
+        // Arrange
+        var messages = CreateMessage(1, 2);
+        var service = new NotificationPoolServiceImp(queryService);
+        queryService.GetAllMessageByEnv().Returns(messages);
 
-        [Fact]
-        public void Remove_ExistedMessageId_ReturnOneNotificationOnPool()
-        {
-            // Arrange
-            var messages = CreateMessage(1, 2);
-            var service = new NotificationPoolServiceImp(queryService);
-            queryService.GetAllMessage().Returns(messages);
+        // Act
+        service.PeekNewItem();
+        service.Remove(1);
 
-            // Act
-            service.PeekNewItem();
-            service.Remove(1);
-
-            // Assert
-            Assert.Single(service.PoolOfNotification);
-        }
+        // Assert
+        Assert.Single(service.PoolOfNotification);
     }
 }

@@ -1,13 +1,12 @@
 ﻿using Fanex.Data.Repository;
 
-namespace SettlementNotification.Criteria
+namespace SettlementNotification.Criteria;
+
+public class UpdateFlagCriteria : NonQueryCommand
 {
-    public class UpdateFlagCriteria : NonQueryCommand
-    {
-        public int MessageId { get; set; }
+    public int MessageId { get; set; }
 
-        public override string GetSettingKey() => "NAP_Set_LetstalkMessage_Update";
+    public override string GetSettingKey() => "NAP_Set_LetstalkMessage_Update";
 
-        public override bool IsValid() => true;
-    }
+    public override bool IsValid() => true;
 }

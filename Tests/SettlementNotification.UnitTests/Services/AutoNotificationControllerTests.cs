@@ -1,36 +1,35 @@
-﻿using NSubstitute;
+﻿using System.Collections.Generic;
+using NSubstitute;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
-using System.Collections.Generic;
 using Xunit;
 
-namespace SettlementNotification.UnitTests.Services
+namespace SettlementNotification.UnitTests.Services;
+
+public class AutoNotificationControllerTests
 {
-    public class AutoNotificationControllerTests
+    [Fact]
+    public void Process_HasNotification_InvokeProcessMethod()
     {
-        [Fact]
-        public void Process_HasNotification_InvokeProcessMethod()
+        var notificationPoolService = Substitute.For<NotificationPoolService>();
+        var notificationService = Substitute.For<NotificationService>();
+        var controller = new AutoNotificationControllerImp(notificationPoolService, notificationService);
+
+        // Arrange
+        var list = new List<NotificationModel>
         {
-            var notificationPoolService = Substitute.For<NotificationPoolService>();
-            var notificationService = Substitute.For<NotificationService>();
-            var controller = new AutoNotificationControllerImp(notificationPoolService, notificationService);
-
-            // Arrange
-            var list = new List<NotificationModel>
+            new ()
             {
-                new NotificationModel
-                {
-                    MatchId = 1
-                }
-            };
+                MatchId = 1
+            }
+        };
 
-            notificationPoolService.PeekNewItem().Returns(list);
+        notificationPoolService.PeekNewItem().Returns(list);
 
-            // Act
-            controller.Process();
+        // Act
+        controller.Process();
 
-            // Assert
-            notificationService.Received().Notify(list[0]);
-        }
+        // Assert
+        notificationService.Received().Notify(list[0]);
     }
 }

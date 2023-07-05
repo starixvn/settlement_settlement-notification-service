@@ -1,50 +1,49 @@
-﻿using SettlementNotification.Models;
-using Fanex.LetstalkService.Client;
+﻿using Fanex.LetstalkService.Client;
 using Fanex.LetstalkService.Core.Models;
 using Microsoft.Extensions.Options;
+using SettlementNotification.Models;
 
-namespace SettlementNotification.Services
+namespace SettlementNotification.Services;
+
+public interface SendMessageService
 {
-    public interface SendMessageService
+    void Send(NotificationModel notificationModel);
+}
+
+public class SendMessageServiceImp : SendMessageService
+{
+    private readonly AppSettingsKey appSettingsKey;
+
+    private readonly ContentService contentService;
+
+    private readonly LetstalkClientService letstalkClientService;
+
+    public SendMessageServiceImp(ContentService contentService, LetstalkClientService letstalkClientService, IOptions<AppSettingsKey> appSettingsKey)
     {
-        void Send(NotificationModel notificationModel);
+        this.letstalkClientService = letstalkClientService;
+        this.appSettingsKey = appSettingsKey.Value;
+        this.contentService = contentService;
     }
 
-    public class SendMessageServiceImp : SendMessageService
+    public void Send(NotificationModel notificationModel)
     {
-        private readonly AppSettingsKey appSettingskey;
+        var content = contentService.Content(notificationModel);
+        var letstalkGroupName = appSettingsKey.EnvironmentName.Equals("PRO") && !notificationModel.IsTest
+            ? appSettingsKey.LetstalkUserGroup
+            : appSettingsKey.LetstalkTestGroup;
 
-        private readonly ContentService contentService;
+        var messageModel = CreateLetstalkMessageModel(letstalkGroupName, notificationModel.MessageGroupName, content);
+        letstalkClientService.SendMessage(messageModel);
+    }
 
-        private readonly LetstalkClientService letstalkClientService;
-
-        public SendMessageServiceImp(ContentService contentService, LetstalkClientService letstalkClientService, IOptions<AppSettingsKey> appSettingskey)
+    private LetstalkModel CreateLetstalkMessageModel(string letstalkGroupName, string subject, string content)
+    {
+        return new LetstalkModel
         {
-            this.letstalkClientService = letstalkClientService;
-            this.appSettingskey = appSettingskey.Value;
-            this.contentService = contentService;
-        }
-
-        public void Send(NotificationModel notificationModel)
-        {
-            var content = contentService.Content(notificationModel);
-            var letstalkGroupName = appSettingskey.EnvironmentName.Equals("PRO") && !notificationModel.IsTest
-                  ? appSettingskey.LetstalkUserGroup
-                  : appSettingskey.LetstalkTestGroup;
-
-            var messageModel = CreateLetstalkMessageModel(letstalkGroupName, notificationModel.MessageGroupName, content);
-            letstalkClientService.SendMessage(messageModel);
-        }
-
-        private LetstalkModel CreateLetstalkMessageModel(string letstalkGroupName, string subject, string content)
-        {
-            return new LetstalkModel
-            {
-                TargetName = appSettingskey.LetstalkTargetName,
-                Subject = subject,
-                Content = content,
-                Group = letstalkGroupName
-            };
-        }
+            TargetName = appSettingsKey.LetstalkTargetName,
+            Subject = subject,
+            Content = content,
+            Group = letstalkGroupName
+        };
     }
 }
