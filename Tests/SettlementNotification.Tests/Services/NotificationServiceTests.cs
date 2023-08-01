@@ -1,11 +1,11 @@
-﻿using System;
-using Fanex.LetstalkService.Client;
+﻿using Fanex.LetstalkService.Client;
 using Fanex.LetstalkService.Core.Services;
 using Fanex.RemotingRef;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
+using System;
 using Xunit;
 
 namespace SettlementNotification.Tests.Services;
@@ -16,9 +16,9 @@ public class NotificationServiceTests
 
     public NotificationServiceTests()
     {
-        AppConfigService.Config.LetstalkServiceApi = "http://letstalk-webapi.playthefun.com/";
+        AppConfigService.Config.LetstalkServiceApi = "http://napmailletstalk.nexdev.net/";
         RefDataTypeContainer
-            .ConnectTo(new Uri("http://ha.nexdev.net:7258/Main/"))
+            .ConnectTo(new Uri("http://remotingref-api.nexdev.net/main/"))
             .FromApplication("Settlement");
 
         var remotingRefService = new RemotingRefService();

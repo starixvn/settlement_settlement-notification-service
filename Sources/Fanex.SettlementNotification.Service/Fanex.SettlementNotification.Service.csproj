@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -16,10 +16,6 @@
     <None Remove="appsettings.PROD.json" />
     <None Remove="appsettings.SIT.json" />
     <None Remove="appsettings.UAT.json" />
-    <None Remove="App_Data\SpName.LOCAL.xml" />
-    <None Remove="App_Data\SpName.PROD.xml" />
-    <None Remove="App_Data\SpName.SIT.xml" />
-    <None Remove="App_Data\SpName.UAT.xml" />
     <None Remove="App_Data\SpName.xml" />
     <None Remove="Templates\AlertTemplate.cshtml" />
   </ItemGroup>
@@ -31,18 +27,6 @@
     <Content Include="appsettings.PROD.json" />
     <Content Include="appsettings.SIT.json" />
     <Content Include="appsettings.UAT.json" />
-    <Content Include="App_Data\SpName.LOCAL.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="App_Data\SpName.PROD.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="App_Data\SpName.SIT.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="App_Data\SpName.UAT.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="App_Data\SpName.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -81,6 +65,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ONEbook.UM" Version="3.1.4" />
     <PackageReference Include="ONEbook.UM.AspNetCore" Version="3.1.0" />
     <PackageReference Include="ONEbook.UM.Transport" Version="3.1.2" />
