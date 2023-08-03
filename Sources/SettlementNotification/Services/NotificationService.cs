@@ -1,5 +1,4 @@
-﻿using Fanex.LetstalkService.Core.Services;
-using Fanex.Logging;
+﻿using Fanex.Logging;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
 using SettlementNotification.Models;
@@ -42,16 +41,9 @@ public class NotificationServiceImp : NotificationService
     {
         try
         {
-            logger.Info("Get LetstalkServiceApi");
             notificationModel.RefDataService = refDataService;
-
-            var url = $"LetstalkServiceApi: {AppConfigService.Config.LetstalkServiceApi}";
-
-            logger.Info(url);
-
             sendMessageService.Send(notificationModel);
-            //queryService.UpdateFlag(notificationModel.MessageId);
-            logger.Info("Info send!!!");
+            queryService.UpdateFlag(notificationModel.MessageId);
         }
         catch (Exception exception)
         {
@@ -60,7 +52,7 @@ public class NotificationServiceImp : NotificationService
                 .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
                 .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
                 .ToString();
-            logger.Info(logMessage);
+            logger.Error(logMessage);
         }
         finally
         {

@@ -45,14 +45,15 @@ public class SenderNotificationService : IHostedService
 
     private void ThreadProcess()
     {
-        //while (running)
-        //{
-        //    if (maintenanceService.IsMaintenance) continue;
-
-        MainProcess();
-        var interval = configuration.GetSection("ServiceInterval").Value ?? "0";
-        Thread.Sleep(int.Parse(interval));
-        //}
+        while (running)
+        {
+            if (!maintenanceService.IsMaintenance)
+            {
+                MainProcess();
+                var interval = configuration.GetSection("ServiceInterval").Value ?? "0";
+                Thread.Sleep(int.Parse(interval));
+            }
+        }
     }
 
     private void MainProcess()
@@ -64,7 +65,7 @@ public class SenderNotificationService : IHostedService
         }
         catch (Exception exception)
         {
-            LogService.Error("Exception in main thread - Process:", exception);
+            LogService.Error("Fanex.SettlementNotification.Service: ", exception);
         }
     }
 
