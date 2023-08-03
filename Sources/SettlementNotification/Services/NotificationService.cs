@@ -1,4 +1,5 @@
-﻿using Fanex.Logging;
+﻿using Fanex.LetstalkService.Core.Services;
+using Fanex.Logging;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
 using SettlementNotification.Models;
@@ -21,27 +22,36 @@ public class NotificationServiceImp : NotificationService
 
     private readonly NotificationPoolService notificationPoolService;
 
+    private readonly ILogger logger;
+
     public NotificationServiceImp(
         RefDataService refDataService,
         QueryService queryService,
         SendMessageService sendMessageService,
-        NotificationPoolService notificationPoolService)
+        NotificationPoolService notificationPoolService,
+        ILogger logger)
     {
         this.refDataService = refDataService;
         this.queryService = queryService;
         this.sendMessageService = sendMessageService;
         this.notificationPoolService = notificationPoolService;
+        this.logger = logger;
     }
 
     public void Notify(NotificationModel notificationModel)
     {
         try
         {
+            logger.Info("Get LetstalkServiceApi");
             notificationModel.RefDataService = refDataService;
+
+            var url = $"LetstalkServiceApi: {AppConfigService.Config.LetstalkServiceApi}";
+
+            logger.Info(url);
+
             sendMessageService.Send(notificationModel);
             //queryService.UpdateFlag(notificationModel.MessageId);
-            var logMessage1 = new LogMessage("Error from settlement notification service").ToString();
-            LogService.Info(logMessage1);
+            logger.Info("Info send!!!");
         }
         catch (Exception exception)
         {
@@ -50,7 +60,7 @@ public class NotificationServiceImp : NotificationService
                 .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
                 .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
                 .ToString();
-            LogService.Info(logMessage);
+            logger.Info(logMessage);
         }
         finally
         {

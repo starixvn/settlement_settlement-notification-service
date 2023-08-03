@@ -1,4 +1,5 @@
-﻿using NSubstitute;
+﻿using Fanex.Logging;
+using NSubstitute;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
 using Xunit;
@@ -22,7 +23,8 @@ public class NotificationServiceTests
         queryService = Substitute.For<QueryService>();
         sendMessageService = Substitute.For<SendMessageService>();
         notificationPoolService = Substitute.For<NotificationPoolService>();
-        service = new NotificationServiceImp(refDataService, queryService, sendMessageService, notificationPoolService);
+        var loggerService = Substitute.For<ILogger>();
+        service = new NotificationServiceImp(refDataService, queryService, sendMessageService, notificationPoolService, loggerService);
     }
 
     [Fact]

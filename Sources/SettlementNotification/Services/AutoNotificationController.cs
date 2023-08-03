@@ -1,4 +1,7 @@
-﻿namespace SettlementNotification.Services;
+﻿using SettlementNotification.Models;
+using System;
+
+namespace SettlementNotification.Services;
 
 public interface AutoNotificationController
 {
@@ -21,10 +24,24 @@ public class AutoNotificationControllerImp : AutoNotificationController
 
     public void Process()
     {
-        var list = notificationPoolService.PeekNewItem();
-        list.ForEach(m =>
+        var model = new NotificationModel
         {
-            notificationService.Notify(m);
-        });
+            MessageId = 9999,
+            MatchId = 8888,
+            HomeId = 181,
+            AwayId = 250,
+            IsTest = true,
+            KickOffTime = DateTime.Now,
+            MessageGroupId = 1,
+            MessageContent = "message",
+            ActionName = "Auto Test",
+            MessageType = "Warning"
+        };
+        notificationService.Notify(model);
+        //var list = notificationPoolService.PeekNewItem();
+        //list.ForEach(m =>
+        //{
+        //    notificationService.Notify(m);
+        //});
     }
 }
