@@ -5,7 +5,7 @@ COPY ./Sources/SettlementNotification ./SettlementNotification
 COPY ./Sources/Fanex.SettlementNotification.Service/Fanex.SettlementNotification.Service.csproj ./Fanex.SettlementNotification.Service/Fanex.SettlementNotification.Service.csproj
 
 WORKDIR /src/Fanex.SettlementNotification.Service
-RUN dotnet nuget add source http://nuget.nexdev.net/api/v2
+RUN dotnet nuget add source https://nuget.nexdev.net/api/v2
 RUN dotnet restore -v n
 
 COPY ./Sources/Fanex.SettlementNotification.Service .
