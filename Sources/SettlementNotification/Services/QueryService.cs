@@ -1,12 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Fanex.Caching;
-using Fanex.Data.Repository;
-using Microsoft.Extensions.Options;
-using SettlementNotification.Criteria;
-using SettlementNotification.Models;
+﻿namespace SettlementNotification.Services;
 
-namespace SettlementNotification.Services;
+using Criteria;
+using Models;
 
 public interface QueryService
 {

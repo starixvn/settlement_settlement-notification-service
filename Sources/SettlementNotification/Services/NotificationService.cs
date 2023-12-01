@@ -1,10 +1,6 @@
-﻿using Fanex.Logging;
-using Fanex.Logging.Extensions;
-using Fanex.Logging.Extensions.Database;
-using SettlementNotification.Models;
-using System;
+﻿namespace SettlementNotification.Services;
 
-namespace SettlementNotification.Services;
+using Models;
 
 public interface NotificationService
 {

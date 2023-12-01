@@ -44,7 +44,7 @@ public class NotificationServiceTests
         service = new NotificationServiceImp(refDataService, queryService, sendMessageService, notificationPoolService, loggerService);
     }
 
-    private NotificationModel Create()
+    private static NotificationModel Create()
     {
         return new NotificationModel
         {

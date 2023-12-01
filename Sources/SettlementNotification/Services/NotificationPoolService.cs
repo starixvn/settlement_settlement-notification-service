@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using SettlementNotification.Models;
+﻿namespace SettlementNotification.Services;
 
-namespace SettlementNotification.Services;
+using Models;
 
 public interface NotificationPoolService
 {

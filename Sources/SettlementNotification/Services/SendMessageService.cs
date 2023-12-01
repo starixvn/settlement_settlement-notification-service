@@ -1,9 +1,6 @@
-﻿using Fanex.LetstalkService.Client;
-using Fanex.LetstalkService.Core.Models;
-using Microsoft.Extensions.Options;
-using SettlementNotification.Models;
+﻿namespace SettlementNotification.Services;
 
-namespace SettlementNotification.Services;
+using Models;
 
 public interface SendMessageService
 {

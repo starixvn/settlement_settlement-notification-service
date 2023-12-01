@@ -1,6 +1,4 @@
-﻿using Fanex.Data.Repository;
-
-namespace SettlementNotification.Criteria;
+﻿namespace SettlementNotification.Criteria;
 
 public class UpdateFlagCriteria : NonQueryCommand
 {

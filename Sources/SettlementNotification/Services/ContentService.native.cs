@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
-using RazorEngine;
+﻿using RazorEngine;
 using RazorEngine.Templating;
 using SettlementNotification.Models;
+using System.IO;
 
 namespace SettlementNotification.Services;
 

@@ -1,0 +1,11 @@
+﻿global using Fanex.Caching;
+global using Fanex.Data.Repository;
+global using Fanex.LetstalkService.Client;
+global using Fanex.LetstalkService.Core.Models;
+global using Fanex.Logging;
+global using Fanex.Logging.Extensions;
+global using Fanex.Logging.Extensions.Database;
+global using Microsoft.Extensions.Options;
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
