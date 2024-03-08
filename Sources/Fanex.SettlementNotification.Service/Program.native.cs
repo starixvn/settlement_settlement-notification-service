@@ -19,13 +19,9 @@ services.AddHostedService<SenderNotificationService>();
 
 var app = builder.Build();
 
-app.MapGet("/", async context =>
+app.Run(async context =>
 {
-    await context.Response.WriteAsync("Fanex.SettlementNotification.Service");
+    await context.Response.WriteAsync("OK");
 });
 
-#if DEBUG
 app.Run();
-#else
-await app.RunAsync("http://0.0.0.0:5000");
-#endif
