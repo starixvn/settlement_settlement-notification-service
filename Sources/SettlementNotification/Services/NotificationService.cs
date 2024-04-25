@@ -43,7 +43,7 @@ public class NotificationServiceImp : NotificationService
         }
         catch (Exception exception)
         {
-            var logMessage = new LogMessage($"Error from settlement notification service: {exception.Message}")
+            var logMessage = new LogMessage($"MatchId: {notificationModel.MatchId} - MessageId: {notificationModel.MessageId} : {exception.Message}")
                 .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(exception))
                 .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
                 .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
