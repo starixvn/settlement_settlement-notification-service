@@ -1,5 +1,6 @@
 ﻿namespace SettlementNotification.Services;
 
+using System.Threading.Tasks;
 using Criteria;
 using Models;
 
@@ -8,6 +9,8 @@ public interface QueryService
     List<NotificationModel> GetAllMessageByEnv();
 
     void UpdateFlag(int id);
+
+    Task<NotificationModel> GetMessageByMatchId(int matchId);
 }
 
 public class QueryServiceImp : QueryService
@@ -39,6 +42,11 @@ public class QueryServiceImp : QueryService
             "UAT" => (matches.Where(m => m.LeagueId == leagueId)).ToList(),
             _ => matches
         };
+    }
+
+    public async Task<NotificationModel> GetMessageByMatchId(int matchId)
+    {
+        throw new NotImplementedException();
     }
 
     public void UpdateFlag(int id)

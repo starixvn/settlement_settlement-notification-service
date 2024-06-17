@@ -15,6 +15,7 @@ using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
 using SettlementNotification.Services;
 using SharpRaven;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 
@@ -41,6 +42,8 @@ public static class AutoInjector
         services.AddSingleton<ICacheService>(new CacheService());
         services.AddSingleton<LetstalkClientService, LetstalkClientServiceImp>();
         services.AddSingleton<SendMessageService, SendMessageServiceImp>();
+        services.AddSingleton<MatchService, MatchServiceImp>();
+
         StartUmSetting(configuration);
         StartLogSetting(configuration);
         ConfigureRedis(services, configuration);
@@ -75,16 +78,20 @@ public static class AutoInjector
         LogManager.SetDefaultLogCategory(configuration.GetSection("LogCategory").Value).Use(logEngine);
     }
 
-    private static void ConfigureRedis(IServiceCollection service, IConfiguration configuration)
+    private static void ConfigureRedis(IServiceCollection services, IConfiguration configuration)
     {
-        var redisHost = configuration.GetSection("Redis.Server").Value;
-        var redisPort = configuration.GetSection("Redis.Port").Value;
-        var redisPassword = configuration.GetSection("Redis.Password").Value;
-        var redisDatabase = configuration.GetSection("Redis.DefaultDatabase").Value;
-        service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
+        var redisConfig = configuration.GetSection("AuthSettings:RedisConfig").Value;
+        var applicationName = configuration.GetSection("AuthSettings:ChannelPrefix").Value;
+
+        //services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{redisConfig},ChannelPrefix={applicationName}"));
+
+        services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{redisConfig}"));
+
+        services.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
-            ConnectionString = $"{redisHost}:{redisPort},password={redisPassword},defaultDatabase={redisDatabase}",
-            ApplicationName = configuration.GetSection("Redis.ApplicationName").Value,
+            ConnectionString = redisConfig,
+            ApplicationName = applicationName,
         }));
+        services.AddSingleton<ICacheService>(new CacheService());
     }
 }
