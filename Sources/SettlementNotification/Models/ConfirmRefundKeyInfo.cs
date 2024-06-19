@@ -6,6 +6,7 @@ public class ConfirmRefundKeyInfo
     public int MatchId { get; set; }
     public string ResourceId { get; set; } = string.Empty;
     public string Prefix { get; set; } = string.Empty;
+    public string ResourceName { get; set; } = string.Empty;
 
     public bool IsValid => Prefix.Equals(KeyConfirmRefund) && MatchId > 0;
 
@@ -13,11 +14,12 @@ public class ConfirmRefundKeyInfo
     {
         var keyInfo = !string.IsNullOrEmpty(key) ? key.Split(':') : [];
 
-        if (keyInfo.Length > 2)
+        if (keyInfo.Length >= 3)
         {
             Prefix = keyInfo[0];
             MatchId = Convert.ToInt32(keyInfo[1]);
             ResourceId = keyInfo[2];
+            ResourceName = keyInfo.Length > 3 ? keyInfo[3] : string.Empty;
         }
     }
 }

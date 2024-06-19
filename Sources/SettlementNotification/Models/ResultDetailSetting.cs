@@ -2,8 +2,8 @@
 
 public class ResultDetailSetting
 {
-    private readonly byte confirmRefundPosition = 3;
-    private readonly byte confirmedRefundSdtPosition = 4;
+    private readonly byte confirmRefundPosition = 2;
+    private readonly byte confirmedRefundSdtPosition = 3;
 
     public byte ResultSetting { get; set; }
 

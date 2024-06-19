@@ -44,12 +44,12 @@ public class MatchServiceImp : MatchService
         var criteria = new GetResultInfoCriteria
         {
             MatchId = matchId,
-            ResourceId = resourceId
+            ResourceIds = resourceId
         };
 
-        var result = await repository.GetAsync<ResultDetail>(criteria);
+        var result = await repository.FetchAsync<ResultDetail>(criteria);
 
-        return result;
+        return result.FirstOrDefault();
     }
 
     public async Task<bool> CheckRunningTicket(int matchId, string resourceId)
@@ -57,7 +57,7 @@ public class MatchServiceImp : MatchService
         var criteria = new CheckRunningTicketCriteria
         {
             MatchId = matchId,
-            ResourceId = resourceId
+            ResourceIds = resourceId
         };
 
         var tasks = appSettings.SiteDbServer.Select(s => CheckRunningTicketOneSite(s, criteria));
@@ -73,6 +73,6 @@ public class MatchServiceImp : MatchService
 
         await repository.ExecuteAsync(criteria);
 
-        return criteria.IsExistsRunningTicket;
+        return criteria.IsExistsTicket;
     }
 }

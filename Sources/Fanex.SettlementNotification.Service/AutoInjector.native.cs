@@ -43,6 +43,7 @@ public static class AutoInjector
         services.AddSingleton<LetstalkClientService, LetstalkClientServiceImp>();
         services.AddSingleton<SendMessageService, SendMessageServiceImp>();
         services.AddSingleton<MatchService, MatchServiceImp>();
+        services.AddSingleton<ConfirmRefundService, ConfirmRefundServiceImp>();
 
         StartUmSetting(configuration);
         StartLogSetting(configuration);
