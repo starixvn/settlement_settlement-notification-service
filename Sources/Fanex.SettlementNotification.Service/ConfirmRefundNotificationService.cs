@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Hosting;
@@ -28,6 +29,7 @@ public class ConfirmRefundNotificationService : IHostedService
         var subscriber = connectionMultiplexer.GetSubscriber();
         await subscriber.SubscribeAsync(ExpiredKeysChannel, async (channel, value) =>
         {
+            Console.WriteLine(channel);
             if (value != "expired") return;
 
             var key = GetKey(channel);
