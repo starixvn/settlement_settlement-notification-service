@@ -91,8 +91,8 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 			return false;
 		}
 
-		if (resultDetail != null && !resultDetail.ResultDetailSetting.IsConfirmRefund
-				&& !resultDetail.ResultDetailSetting.IsConfirmedRefundSdt)
+		if (resultDetail != null && (!resultDetail.ResultDetailSetting.IsConfirmRefund
+				&& !resultDetail.ResultDetailSetting.IsConfirmedRefundSdt || SettlementStatus.RefundStatuses.Contains(resultDetail.SettlementStatusId)))
 		{
 			return false;
 		}
