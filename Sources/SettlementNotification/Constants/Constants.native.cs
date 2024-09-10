@@ -16,7 +16,7 @@ public static class ChildMatchTypes
 
 public static class SportType
 {
-	public const int Soccer = 1;
+	public const short Soccer = 1;
 }
 
 public static class EventStatus

@@ -97,9 +97,9 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 			return false;
 		}
 
-		var IsExistRunningResultTicket = await matchService.CheckRunningTicket(matchDetail.MatchId, keyInfo.ResourceId);
+		var isExistRunningResultTicket = await matchService.CheckRunningTicket(matchDetail.MatchId, matchDetail.SportType, keyInfo.ResourceId);
 
-		return IsExistRunningResultTicket;
+		return isExistRunningResultTicket;
 	}
 
 	private string GetMessageContent(ConfirmRefundKeyInfo keyInfo, MatchDetail matchDetail)
