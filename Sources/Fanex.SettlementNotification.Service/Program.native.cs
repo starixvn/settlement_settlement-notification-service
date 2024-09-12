@@ -16,6 +16,7 @@ services.ConfigInternalService(builder.Configuration);
 builder.Services.AddFanexSql(builder.Configuration);
 
 services.AddHostedService<SenderNotificationService>();
+services.AddHostedService<ConfirmRefundNotificationService>();
 
 var app = builder.Build();
 

@@ -9,4 +9,5 @@ public class AppSettingsKey
     public string LetstalkTestGroup { get; set; }
 
     public string EnvironmentName { get; set; }
+    public List<string> SiteDbServer { get; set; }
 }
