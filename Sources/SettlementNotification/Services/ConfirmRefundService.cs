@@ -16,12 +16,18 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 	private readonly IDynamicRepository repository;
 	private readonly NotificationService notificationService;
 	private readonly MatchService matchService;
+	private readonly ICache cache;
 
-	public ConfirmRefundServiceImp(IDynamicRepository repository, NotificationService notificationService, MatchService matchService)
+	public ConfirmRefundServiceImp(
+		IDynamicRepository repository,
+		NotificationService notificationService,
+		MatchService matchService,
+		ICache cache)
 	{
 		this.repository = repository;
 		this.notificationService = notificationService;
 		this.matchService = matchService;
+		this.cache = cache;
 	}
 
 	public async Task HandleSend(ConfirmRefundKeyInfo keyInfo)
@@ -30,9 +36,9 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 
 		var resultDetail = await matchService.GetResultDetail(keyInfo.MatchId, keyInfo.ResourceId);
 
-		var IsCanSendMessage = await CanSendMessage(matchDetail, resultDetail, keyInfo);
+		var isCanSendMessage = await CanSendMessage(matchDetail, resultDetail, keyInfo);
 
-		if (!IsCanSendMessage)
+		if (!isCanSendMessage)
 		{
 			await Log.InfoAsync("Can't send notification for confirm refund", matchDetail, resultDetail);
 			return;
@@ -44,6 +50,7 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 	private async Task InsertAndSendNotify(MatchDetail matchDetail, ConfirmRefundKeyInfo keyInfo)
 	{
 		var messageContent = GetMessageContent(keyInfo, matchDetail);
+		cache.TryGet(CacheKeys.KeyLeagueId, out int leagueId);
 
 		var criteria = new AddNotificationCriteria
 		{
@@ -74,7 +81,8 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 			KickOffTime = matchDetail.KickOffTime,
 			MessageId = criteria.MessageId,
 			MessageType = criteria.MessageType,
-			MessageGroupId = criteria.MessageGroupId
+			MessageGroupId = criteria.MessageGroupId,
+			IsTest = leagueId > 0 && matchDetail.LeagueId == leagueId
 		};
 
 		notificationService.Notify(notificationModel);

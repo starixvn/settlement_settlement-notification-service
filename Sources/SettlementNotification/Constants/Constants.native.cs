@@ -58,3 +58,8 @@ public static class SettlementStatus
 
 	public static byte[] RefundStatuses = [Refund, RefundHt, RefundFt, Abandoned1H, Abandoned2H, Abandoned];
 }
+
+public static class CacheKeys
+{
+	public const string KeyLeagueId = "Settlement-AutoPayout-AutoInstant-LeagueId";
+}
