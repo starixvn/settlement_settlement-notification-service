@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
 services.Configure<AppSettingsKey>(builder.Configuration)
-    .AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettingsKey>>().Value);
+	.AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettingsKey>>().Value);
 
 services.ConfigInternalService(builder.Configuration);
 builder.Services.AddFanexSql(builder.Configuration);
@@ -22,7 +22,7 @@ var app = builder.Build();
 
 app.Run(async context =>
 {
-    await context.Response.WriteAsync("OK");
+	await context.Response.WriteAsync("OK");
 });
 
 app.Run();

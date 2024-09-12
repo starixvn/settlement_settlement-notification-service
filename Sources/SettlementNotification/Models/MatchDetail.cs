@@ -22,6 +22,8 @@ public class MatchDetail
 
 	public int LeagueId { get; set; }
 
+	public bool IsTest { get; set; }
+
 	public string LeagueName => RefDataService.GetLeagueName(LeagueId);
 
 	public short ChildMatchType { get; set; }

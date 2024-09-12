@@ -16,18 +16,15 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 	private readonly IDynamicRepository repository;
 	private readonly NotificationService notificationService;
 	private readonly MatchService matchService;
-	private readonly ICache cache;
 
 	public ConfirmRefundServiceImp(
 		IDynamicRepository repository,
 		NotificationService notificationService,
-		MatchService matchService,
-		ICache cache)
+		MatchService matchService)
 	{
 		this.repository = repository;
 		this.notificationService = notificationService;
 		this.matchService = matchService;
-		this.cache = cache;
 	}
 
 	public async Task HandleSend(ConfirmRefundKeyInfo keyInfo)
@@ -50,13 +47,12 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 	private async Task InsertAndSendNotify(MatchDetail matchDetail, ConfirmRefundKeyInfo keyInfo)
 	{
 		var messageContent = GetMessageContent(keyInfo, matchDetail);
-		cache.TryGet(CacheKeys.KeyLeagueId, out int leagueId);
 
 		var criteria = new AddNotificationCriteria
 		{
 			MatchId = keyInfo.MatchId,
 			ActionName = matchDetail.SportType == SportType.Soccer ? "Confirmed Refund All" : "Confirmed Refund",
-			MessageGroupId = 3,
+			MessageGroupId = MessageGroup.ConfirmRefund,
 			StatusId = 255,
 			MessageDetail = keyInfo.ResourceId,
 			MessageContent = messageContent
@@ -82,7 +78,7 @@ public class ConfirmRefundServiceImp : ConfirmRefundService
 			MessageId = criteria.MessageId,
 			MessageType = criteria.MessageType,
 			MessageGroupId = criteria.MessageGroupId,
-			IsTest = leagueId > 0 && matchDetail.LeagueId == leagueId
+			IsTest = matchDetail.IsTest
 		};
 
 		notificationService.Notify(notificationModel);
