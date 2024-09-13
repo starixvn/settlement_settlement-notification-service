@@ -1,4 +1,6 @@
-﻿namespace SettlementNotification.Services;
+﻿using SettlementNotification.Constants;
+
+namespace SettlementNotification.Services;
 
 public interface AutoNotificationController
 {
@@ -13,6 +15,10 @@ public class AutoNotificationControllerImp(
     public void Process()
     {
         var list = notificationPoolService.PeekNewItem();
-        list.ForEach(notificationService.Notify);
+        list.ForEach(m =>
+        {
+            m.LetstalkGroup = LetstalkGroup.Notification;
+            notificationService.Notify(m);
+        });
     }
 }

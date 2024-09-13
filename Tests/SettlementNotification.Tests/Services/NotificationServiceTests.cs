@@ -19,7 +19,7 @@ public class NotificationServiceTests
     {
         AppConfigService.Config.LetstalkServiceApi = "http://napmailletstalk.nexdev.net/";
         RefDataTypeContainer
-            .ConnectTo(new Uri("http://remotingref-api.nexdev.net/main/"))
+            .ConnectTo(new Uri("http://remotingref-api-core.nexdev.net/"))
             .FromApplication("Settlement");
 
         var remotingRefService = new RemotingRefService();
@@ -30,9 +30,13 @@ public class NotificationServiceTests
         var loggerService = Substitute.For<ILogger>();
         var settings = new AppSettingsKey()
         {
-            LetstalkTargetName = "daily-house-wl",
-            LetstalkUserGroup = "DWHL-UAT",
-            LetstalkTestGroup = "DWHL-UAT",
+            Letstalk = new LetstalkSettings
+            {
+                TargetName = "SettlementNotification",
+                UserGroupNotification = "Settlement-Notification-Test",
+                UserGroupRefund = "Settlement-Notification-Test",
+                TestGroup = "Settlement-Notification-Test"
+            },
             EnvironmentName = "LOCAL",
         };
         var appSettingsKey = Options.Create(settings);

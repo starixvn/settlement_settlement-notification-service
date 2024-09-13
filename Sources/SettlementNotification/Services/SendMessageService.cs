@@ -1,4 +1,6 @@
-﻿namespace SettlementNotification.Services;
+﻿using SettlementNotification.Constants;
+
+namespace SettlementNotification.Services;
 
 using Models;
 
@@ -15,21 +17,30 @@ public class SendMessageServiceImp(
 {
     public void Send(NotificationModel notificationModel)
     {
-        var settings = appSettingsKey.Value;
         var content = contentService.Content(notificationModel);
-        var letstalkGroupName = settings.EnvironmentName.Equals("PRO") && !notificationModel.IsTest
-            ? settings.LetstalkUserGroup
-            : settings.LetstalkTestGroup;
+        var letstalkGroupName = GetLetstalkGroup(notificationModel.LetstalkGroup, notificationModel.IsTest);
 
         var messageModel = CreateLetstalkMessageModel(letstalkGroupName, notificationModel.MessageGroupName, content);
         letstalkClientService.SendMessage(messageModel);
+    }
+
+    private string GetLetstalkGroup(int groupId, bool isTest)
+    {
+        var settings = appSettingsKey.Value;
+        var isProdEnvironment = settings.EnvironmentName.Equals("PRO") && !isTest;
+
+        return groupId switch
+        {
+            LetstalkGroup.RefundReminder => isProdEnvironment ? settings.Letstalk.UserGroupRefund : settings.Letstalk.TestGroup,
+            _ => isProdEnvironment ? settings.Letstalk.UserGroupNotification : settings.Letstalk.TestGroup
+        };
     }
 
     private LetstalkModel CreateLetstalkMessageModel(string letstalkGroupName, string subject, string content)
     {
         return new LetstalkModel
         {
-            TargetName = appSettingsKey.Value.LetstalkTargetName,
+            TargetName = appSettingsKey.Value.Letstalk.TargetName,
             Subject = subject,
             Content = content,
             Group = letstalkGroupName

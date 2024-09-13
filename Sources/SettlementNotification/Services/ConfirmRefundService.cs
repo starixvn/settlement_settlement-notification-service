@@ -25,13 +25,10 @@ public class ConfirmRefundServiceImp(
 
         var isCanSendMessage = await CanSendMessage(matchDetail, resultDetail, keyInfo);
 
-        if (!isCanSendMessage)
+        if (isCanSendMessage)
         {
-            await Log.InfoAsync("Can't send notification for confirm refund", matchDetail, resultDetail);
-            return;
+            await InsertAndSendNotify(matchDetail, keyInfo);
         }
-
-        await InsertAndSendNotify(matchDetail, keyInfo);
     }
 
     private async Task InsertAndSendNotify(MatchDetail matchDetail, ConfirmRefundKeyInfo keyInfo)
@@ -68,7 +65,8 @@ public class ConfirmRefundServiceImp(
             MessageId = criteria.MessageId,
             MessageType = criteria.MessageType,
             MessageGroupId = criteria.MessageGroupId,
-            IsTest = matchDetail.IsTest
+            IsTest = matchDetail.IsTest,
+            LetstalkGroup = LetstalkGroup.RefundReminder
         };
 
         notificationService.Notify(notificationModel);
