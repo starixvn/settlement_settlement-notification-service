@@ -7,27 +7,19 @@ public interface SendMessageService
     void Send(NotificationModel notificationModel);
 }
 
-public class SendMessageServiceImp : SendMessageService
+public class SendMessageServiceImp(
+    ContentService contentService,
+    LetstalkClientService letstalkClientService,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : SendMessageService
 {
-    private readonly AppSettingsKey appSettingsKey;
-
-    private readonly ContentService contentService;
-
-    private readonly LetstalkClientService letstalkClientService;
-
-    public SendMessageServiceImp(ContentService contentService, LetstalkClientService letstalkClientService, IOptions<AppSettingsKey> appSettingsKey)
-    {
-        this.letstalkClientService = letstalkClientService;
-        this.appSettingsKey = appSettingsKey.Value;
-        this.contentService = contentService;
-    }
-
     public void Send(NotificationModel notificationModel)
     {
+        var settings = appSettingsKey.Value;
         var content = contentService.Content(notificationModel);
-        var letstalkGroupName = appSettingsKey.EnvironmentName.Equals("PRO") && !notificationModel.IsTest
-            ? appSettingsKey.LetstalkUserGroup
-            : appSettingsKey.LetstalkTestGroup;
+        var letstalkGroupName = settings.EnvironmentName.Equals("PRO") && !notificationModel.IsTest
+            ? settings.LetstalkUserGroup
+            : settings.LetstalkTestGroup;
 
         var messageModel = CreateLetstalkMessageModel(letstalkGroupName, notificationModel.MessageGroupName, content);
         letstalkClientService.SendMessage(messageModel);
@@ -37,7 +29,7 @@ public class SendMessageServiceImp : SendMessageService
     {
         return new LetstalkModel
         {
-            TargetName = appSettingsKey.LetstalkTargetName,
+            TargetName = appSettingsKey.Value.LetstalkTargetName,
             Subject = subject,
             Content = content,
             Group = letstalkGroupName

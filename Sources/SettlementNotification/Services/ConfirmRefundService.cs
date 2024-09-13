@@ -8,114 +8,99 @@ namespace SettlementNotification.Services;
 
 public interface ConfirmRefundService
 {
-	Task HandleSend(ConfirmRefundKeyInfo keyInfo);
+    Task HandleSend(ConfirmRefundKeyInfo keyInfo);
 }
 
-public class ConfirmRefundServiceImp : ConfirmRefundService
+public class ConfirmRefundServiceImp(
+    IDynamicRepository repository,
+    NotificationService notificationService,
+    MatchService matchService)
+    : ConfirmRefundService
 {
-	private readonly IDynamicRepository repository;
-	private readonly NotificationService notificationService;
-	private readonly MatchService matchService;
+    public async Task HandleSend(ConfirmRefundKeyInfo keyInfo)
+    {
+        var matchDetail = await matchService.GetMatchDetails(keyInfo.MatchId);
 
-	public ConfirmRefundServiceImp(
-		IDynamicRepository repository,
-		NotificationService notificationService,
-		MatchService matchService)
-	{
-		this.repository = repository;
-		this.notificationService = notificationService;
-		this.matchService = matchService;
-	}
+        var resultDetail = await matchService.GetResultDetail(keyInfo.MatchId, keyInfo.ResourceId);
 
-	public async Task HandleSend(ConfirmRefundKeyInfo keyInfo)
-	{
-		var matchDetail = await matchService.GetMatchDetails(keyInfo.MatchId);
+        var isCanSendMessage = await CanSendMessage(matchDetail, resultDetail, keyInfo);
 
-		var resultDetail = await matchService.GetResultDetail(keyInfo.MatchId, keyInfo.ResourceId);
+        if (!isCanSendMessage)
+        {
+            await Log.InfoAsync("Can't send notification for confirm refund", matchDetail, resultDetail);
+            return;
+        }
 
-		var isCanSendMessage = await CanSendMessage(matchDetail, resultDetail, keyInfo);
+        await InsertAndSendNotify(matchDetail, keyInfo);
+    }
 
-		if (!isCanSendMessage)
-		{
-			await Log.InfoAsync("Can't send notification for confirm refund", matchDetail, resultDetail);
-			return;
-		}
+    private async Task InsertAndSendNotify(MatchDetail matchDetail, ConfirmRefundKeyInfo keyInfo)
+    {
+        var messageContent = GetMessageContent(keyInfo, matchDetail);
 
-		await InsertAndSendNotify(matchDetail, keyInfo);
-	}
+        var criteria = new AddNotificationCriteria
+        {
+            MatchId = keyInfo.MatchId,
+            ActionName = matchDetail.SportType == SportType.Soccer ? "Confirmed Refund All" : "Confirmed Refund",
+            MessageGroupId = MessageGroup.ConfirmRefund,
+            StatusId = 255,
+            MessageDetail = keyInfo.ResourceId,
+            MessageContent = messageContent
+        };
 
-	private async Task InsertAndSendNotify(MatchDetail matchDetail, ConfirmRefundKeyInfo keyInfo)
-	{
-		var messageContent = GetMessageContent(keyInfo, matchDetail);
+        await repository.ExecuteAsync(criteria);
 
-		var criteria = new AddNotificationCriteria
-		{
-			MatchId = keyInfo.MatchId,
-			ActionName = matchDetail.SportType == SportType.Soccer ? "Confirmed Refund All" : "Confirmed Refund",
-			MessageGroupId = MessageGroup.ConfirmRefund,
-			StatusId = 255,
-			MessageDetail = keyInfo.ResourceId,
-			MessageContent = messageContent
-		};
+        if (criteria.ErrCode > 0)
+        {
+            await Log.WarnAsync(criteria.ErrMsg, matchDetail, keyInfo);
+            return;
+        }
 
-		await repository.ExecuteAsync(criteria);
+        var notificationModel = new NotificationModel
+        {
+            ActionName = criteria.ActionName,
+            MatchId = keyInfo.MatchId,
+            HomeId = matchDetail.HomeId,
+            AwayId = matchDetail.AwayId,
+            LeagueId = matchDetail.LeagueId,
+            MessageContent = messageContent,
+            KickOffTime = matchDetail.KickOffTime,
+            MessageId = criteria.MessageId,
+            MessageType = criteria.MessageType,
+            MessageGroupId = criteria.MessageGroupId,
+            IsTest = matchDetail.IsTest
+        };
 
-		if (criteria.ErrCode > 0)
-		{
-			await Log.WarnAsync(criteria.ErrMsg, matchDetail, keyInfo);
-			return;
-		}
+        notificationService.Notify(notificationModel);
+    }
 
-		var notificationModel = new NotificationModel
-		{
-			ActionName = criteria.ActionName,
-			MatchId = keyInfo.MatchId,
-			HomeId = matchDetail.HomeId,
-			AwayId = matchDetail.AwayId,
-			LeagueId = matchDetail.LeagueId,
-			MessageContent = messageContent,
-			KickOffTime = matchDetail.KickOffTime,
-			MessageId = criteria.MessageId,
-			MessageType = criteria.MessageType,
-			MessageGroupId = criteria.MessageGroupId,
-			IsTest = matchDetail.IsTest
-		};
+    private async Task<bool> CanSendMessage(MatchDetail matchDetail, ResultDetail resultDetail, ConfirmRefundKeyInfo keyInfo)
+    {
+        var isMainSoccer = matchDetail.SportType == SportType.Soccer && keyInfo.ResourceId == "01,00";
 
-		notificationService.Notify(notificationModel);
-	}
+        if (isMainSoccer
+               && (!matchDetail.RemarkSettings.IsConfirmRefundAll
+               || !string.IsNullOrEmpty(matchDetail.BetStatus) && matchDetail.BetStatus.Equals("Refund;")))
+        {
+            return false;
+        }
 
-	private async Task<bool> CanSendMessage(MatchDetail matchDetail, ResultDetail resultDetail, ConfirmRefundKeyInfo keyInfo)
-	{
-		var isMainSoccer = matchDetail.SportType == SportType.Soccer && keyInfo.ResourceId == "01,00";
+        if (resultDetail != null && (!resultDetail.ResultDetailSetting.IsConfirmRefund
+                && !resultDetail.ResultDetailSetting.IsConfirmedRefundSdt || SettlementStatus.RefundStatuses.Contains(resultDetail.SettlementStatusId)))
+        {
+            return false;
+        }
 
-		if (isMainSoccer
-			   && (!matchDetail.RemarkSettings.IsConfirmRefundAll
-			   || !string.IsNullOrEmpty(matchDetail.BetStatus) && matchDetail.BetStatus.Equals("Refund;")))
-		{
-			return false;
-		}
+        var isExistRunningResultTicket = await matchService.CheckRunningTicket(matchDetail.MatchId, matchDetail.SportType, keyInfo.ResourceId);
 
-		if (resultDetail != null && (!resultDetail.ResultDetailSetting.IsConfirmRefund
-				&& !resultDetail.ResultDetailSetting.IsConfirmedRefundSdt || SettlementStatus.RefundStatuses.Contains(resultDetail.SettlementStatusId)))
-		{
-			return false;
-		}
+        return isExistRunningResultTicket;
+    }
 
-		var isExistRunningResultTicket = await matchService.CheckRunningTicket(matchDetail.MatchId, matchDetail.SportType, keyInfo.ResourceId);
+    private static string GetMessageContent(ConfirmRefundKeyInfo keyInfo, MatchDetail matchDetail)
+    {
+        const string LT_1 = "The match has been Confirmed Refund All but has not yet been refunded";
+        const string LT_3 = "The result {0} has been confirmed refund at but has not yet been refunded";
 
-		return isExistRunningResultTicket;
-	}
-
-	private string GetMessageContent(ConfirmRefundKeyInfo keyInfo, MatchDetail matchDetail)
-	{
-		var LT_1 = "The match has been Confirmed Refund All but has not yet been refunded";
-		var LT_3 = "The result {0} has been confirmed refund at but has not yet been refunded";
-
-		if (matchDetail.SportType == SportType.Soccer)
-		{
-			return LT_1;
-		}
-
-		return string.Format(LT_3, keyInfo.ResourceName);
-	}
+        return matchDetail.SportType == SportType.Soccer ? LT_1 : string.Format(LT_3, keyInfo.ResourceName);
+    }
 }

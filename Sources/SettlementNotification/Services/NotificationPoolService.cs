@@ -9,20 +9,11 @@ public interface NotificationPoolService
     void Remove(int id);
 }
 
-public class NotificationPoolServiceImp : NotificationPoolService
+public class NotificationPoolServiceImp(QueryService queryService) : NotificationPoolService
 {
-    private readonly QueryService queryService;
+    private readonly object lockObject = new();
 
-    private readonly object lockObject;
-
-    public NotificationPoolServiceImp(QueryService queryService)
-    {
-        this.queryService = queryService;
-        PoolOfNotification = new List<NotificationModel>();
-        lockObject = new object();
-    }
-
-    public List<NotificationModel> PoolOfNotification { get; set; }
+    public List<NotificationModel> PoolOfNotification { get; set; } = [];
 
     public List<NotificationModel> PeekNewItem()
     {

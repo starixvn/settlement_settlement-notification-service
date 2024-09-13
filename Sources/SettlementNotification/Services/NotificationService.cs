@@ -7,32 +7,14 @@ public interface NotificationService
     void Notify(NotificationModel notificationModel);
 }
 
-public class NotificationServiceImp : NotificationService
+public class NotificationServiceImp(
+    RefDataService refDataService,
+    QueryService queryService,
+    SendMessageService sendMessageService,
+    NotificationPoolService notificationPoolService,
+    ILogger logger)
+    : NotificationService
 {
-    private readonly RefDataService refDataService;
-
-    private readonly QueryService queryService;
-
-    private readonly SendMessageService sendMessageService;
-
-    private readonly NotificationPoolService notificationPoolService;
-
-    private readonly ILogger logger;
-
-    public NotificationServiceImp(
-        RefDataService refDataService,
-        QueryService queryService,
-        SendMessageService sendMessageService,
-        NotificationPoolService notificationPoolService,
-        ILogger logger)
-    {
-        this.refDataService = refDataService;
-        this.queryService = queryService;
-        this.sendMessageService = sendMessageService;
-        this.notificationPoolService = notificationPoolService;
-        this.logger = logger;
-    }
-
     public void Notify(NotificationModel notificationModel)
     {
         try

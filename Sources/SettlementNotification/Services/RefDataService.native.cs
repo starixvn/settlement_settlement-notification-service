@@ -9,16 +9,9 @@ public interface RefDataService
     string GetLeagueName(object leagueId);
 }
 
-public class RefDataServiceImp : RefDataService
+public class RefDataServiceImp(IRemotingRefService remotingRefService) : RefDataService
 {
     private const string LanguageCode = "en";
-
-    private readonly IRemotingRefService remotingRefService;
-
-    public RefDataServiceImp(IRemotingRefService remotingRefService)
-    {
-        this.remotingRefService = remotingRefService;
-    }
 
     public string GetTeamName(object teamId)
     {

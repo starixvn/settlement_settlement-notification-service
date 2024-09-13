@@ -1,64 +1,44 @@
 ﻿namespace SettlementNotification.Services;
 
-using System.Threading.Tasks;
+using Constants;
 using Criteria;
 using Models;
-using SettlementNotification.Constants;
 
 public interface QueryService
 {
-	List<NotificationModel> GetAllMessageByEnv();
+    List<NotificationModel> GetAllMessageByEnv();
 
-	void UpdateFlag(int id);
-
-	Task<NotificationModel> GetMessageByMatchId(int matchId);
+    void UpdateFlag(int id);
 }
 
-public class QueryServiceImp : QueryService
+public class QueryServiceImp(IDynamicRepository repository, ICache cache, IOptions<AppSettingsKey> appSettingsKey)
+    : QueryService
 {
-	private readonly ICache cache;
+    public List<NotificationModel> GetAllMessageByEnv()
+    {
+        var matches = GetAllMessage();
 
-	private readonly AppSettingsKey appSettingsKey;
+        cache.TryGet(CacheKeys.KeyLeagueId, out int leagueId);
 
-	private readonly IDynamicRepository repository;
+        return appSettingsKey.Value.EnvironmentName switch
+        {
+            "PRO" => leagueId > 0 ? (matches.Where(m => m.LeagueId != leagueId)).ToList() : matches,
+            "UAT" => (matches.Where(m => m.LeagueId == leagueId)).ToList(),
+            _ => matches
+        };
+    }
 
-	public QueryServiceImp(IDynamicRepository repository, ICache cache, IOptions<AppSettingsKey> appSettingsKey)
-	{
-		this.repository = repository;
-		this.cache = cache;
-		this.appSettingsKey = appSettingsKey.Value;
-	}
+    public void UpdateFlag(int id)
+    {
+        var criteria = new UpdateFlagCriteria { MessageId = id };
+        repository.Execute(criteria);
+    }
 
-	public List<NotificationModel> GetAllMessageByEnv()
-	{
-		var matches = GetAllMessage();
+    private List<NotificationModel> GetAllMessage()
+    {
+        var criteria = new GetAllMessageCriteria();
+        var matches = repository.Fetch<NotificationModel>(criteria);
 
-		cache.TryGet(CacheKeys.KeyLeagueId, out int leagueId);
-
-		return appSettingsKey.EnvironmentName switch
-		{
-			"PRO" => leagueId > 0 ? (matches.Where(m => m.LeagueId != leagueId)).ToList() : matches,
-			"UAT" => (matches.Where(m => m.LeagueId == leagueId)).ToList(),
-			_ => matches
-		};
-	}
-
-	public async Task<NotificationModel> GetMessageByMatchId(int matchId)
-	{
-		throw new NotImplementedException();
-	}
-
-	public void UpdateFlag(int id)
-	{
-		var criteria = new UpdateFlagCriteria { MessageId = id };
-		repository.Execute(criteria);
-	}
-
-	private List<NotificationModel> GetAllMessage()
-	{
-		var criteria = new GetAllMessageCriteria();
-		var matches = repository.Fetch<NotificationModel>(criteria);
-
-		return matches.ToList();
-	}
+        return matches.ToList();
+    }
 }

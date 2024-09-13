@@ -1,19 +1,14 @@
 ﻿namespace SettlementNotification.Models;
 
-public class ResultDetailSetting
+public class ResultDetailSetting(byte resultSetting)
 {
-    private readonly byte confirmRefundPosition = 2;
-    private readonly byte confirmedRefundSdtPosition = 3;
+    private const byte confirmRefundPosition = 2;
+    private const byte confirmedRefundSdtPosition = 3;
 
-    public byte ResultSetting { get; set; }
+    public byte ResultSetting { get; set; } = resultSetting;
 
     public bool IsConfirmRefund => IsBitSet(ResultSetting, confirmRefundPosition);
     public bool IsConfirmedRefundSdt => IsBitSet(ResultSetting, confirmedRefundSdtPosition);
-
-    public ResultDetailSetting(byte resultSetting)
-    {
-        ResultSetting = resultSetting;
-    }
 
     private static bool IsBitSet(byte value, int position) => (value & (1 << (position - 1))) != 0;
 }

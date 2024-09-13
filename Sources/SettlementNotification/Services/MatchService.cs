@@ -1,79 +1,72 @@
-﻿using System.Threading.Tasks;
-using SettlementNotification.Criteria;
+﻿using SettlementNotification.Criteria;
 using SettlementNotification.Models;
+using System.Threading.Tasks;
 
 namespace SettlementNotification.Services;
 
 public interface MatchService
 {
-	Task<MatchDetail> GetMatchDetails(int matchId);
+    Task<MatchDetail> GetMatchDetails(int matchId);
 
-	Task<ResultDetail> GetResultDetail(int matchId, string resourceId);
+    Task<ResultDetail> GetResultDetail(int matchId, string resourceId);
 
-	Task<bool> CheckRunningTicket(int matchId, short sportType, string resourceId);
+    Task<bool> CheckRunningTicket(int matchId, short sportType, string resourceId);
 }
 
-public class MatchServiceImp : MatchService
+public class MatchServiceImp(
+    IDynamicRepository repository,
+    RefDataService refDataService,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : MatchService
 {
-	private readonly IDynamicRepository repository;
-	private readonly RefDataService refDataService;
-	private readonly AppSettingsKey appSettings;
+    public async Task<MatchDetail> GetMatchDetails(int matchId)
+    {
+        var criteria = new GetMatchDetailCriteria
+        {
+            MatchId = matchId
+        };
 
-	public MatchServiceImp(IDynamicRepository repository, RefDataService refDataService, IOptions<AppSettingsKey> appSettingsKey)
-	{
-		this.repository = repository;
-		this.refDataService = refDataService;
-		this.appSettings = appSettingsKey.Value;
-	}
+        var match = await repository.GetAsync<MatchDetail>(criteria);
+        match.RefDataService = refDataService;
 
-	public async Task<MatchDetail> GetMatchDetails(int matchId)
-	{
-		var criteria = new GetMatchDetailCriteria
-		{
-			MatchId = matchId
-		};
+        return match;
+    }
 
-		var match = await repository.GetAsync<MatchDetail>(criteria);
-		match.RefDataService = refDataService;
+    public async Task<ResultDetail> GetResultDetail(int matchId, string resourceId)
+    {
+        var criteria = new GetResultInfoCriteria
+        {
+            MatchId = matchId,
+            ResourceIds = resourceId
+        };
 
-		return match;
-	}
+        var result = await repository.FetchAsync<ResultDetail>(criteria);
 
-	public async Task<ResultDetail> GetResultDetail(int matchId, string resourceId)
-	{
-		var criteria = new GetResultInfoCriteria
-		{
-			MatchId = matchId,
-			ResourceIds = resourceId
-		};
+        return result.FirstOrDefault();
+    }
 
-		var result = await repository.FetchAsync<ResultDetail>(criteria);
+    public async Task<bool> CheckRunningTicket(int matchId, short sportType, string resourceId)
+    {
+        var criteria = new CheckRunningTicketCriteria
+        {
+            MatchId = matchId,
+            SportType = sportType,
+            ResourceIds = resourceId
+        };
 
-		return result.FirstOrDefault();
-	}
+        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckRunningTicketOneSite(s, criteria));
 
-	public async Task<bool> CheckRunningTicket(int matchId, short sportType, string resourceId)
-	{
-		var criteria = new CheckRunningTicketCriteria
-		{
-			MatchId = matchId,
-			SportType = sportType,
-			ResourceIds = resourceId
-		};
+        var result = await Task.WhenAll(tasks);
 
-		var tasks = appSettings.SiteDbServer.Select(s => CheckRunningTicketOneSite(s, criteria));
+        return result.Any(x => x);
+    }
 
-		var result = await Task.WhenAll(tasks);
+    private async Task<bool> CheckRunningTicketOneSite(string site, CheckRunningTicketCriteria criteria)
+    {
+        criteria.DbServer = site;
 
-		return result.Any(x => x);
-	}
+        await repository.ExecuteAsync(criteria);
 
-	private async Task<bool> CheckRunningTicketOneSite(string site, CheckRunningTicketCriteria criteria)
-	{
-		criteria.DbServer = site;
-
-		await repository.ExecuteAsync(criteria);
-
-		return criteria.IsExistsTicket;
-	}
+        return criteria.IsExistsTicket;
+    }
 }
