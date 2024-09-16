@@ -4,6 +4,7 @@ using Fanex.Logging;
 using Fanex.RemotingRef;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using SettlementNotification.Constants;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
 using System;
@@ -61,7 +62,8 @@ public class NotificationServiceTests
             MessageGroupId = 1,
             MessageContent = "Kaden test message",
             ActionName = "Auto Test",
-            MessageType = "Warning"
+            MessageType = "Warning",
+            LetstalkGroup = LetstalkGroup.Notification
         };
     }
 
