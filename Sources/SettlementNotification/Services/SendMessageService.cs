@@ -31,7 +31,9 @@ public class SendMessageServiceImp(
 
         return groupId switch
         {
-            LetstalkGroup.RefundReminder => isProdEnvironment ? settings.Letstalk.UserGroupRefund : settings.Letstalk.TestGroup,
+            LetstalkGroup.RefundReminder => isProdEnvironment
+                ? settings.Letstalk.UserGroupRefund
+                : settings.Letstalk.TestGroup,
             _ => isProdEnvironment ? settings.Letstalk.UserGroupNotification : settings.Letstalk.TestGroup
         };
     }

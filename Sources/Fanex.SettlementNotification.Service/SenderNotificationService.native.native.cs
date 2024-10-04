@@ -8,24 +8,15 @@ using System.Threading.Tasks;
 
 namespace Fanex.SettlementNotification.Service;
 
-public class SenderNotificationService : IHostedService
+public class SenderNotificationService(
+    IConfiguration configuration,
+    IMaintenanceService maintenanceService,
+    AutoNotificationController autoNotificationController)
+    : IHostedService
 {
-    private readonly AutoNotificationController autoNotificationController;
-
-    private readonly IMaintenanceService maintenanceService;
-
-    private readonly IConfiguration configuration;
-
     private bool running;
 
     private int counter;
-
-    public SenderNotificationService(IConfiguration configuration, IMaintenanceService maintenanceService, AutoNotificationController autoNotificationController)
-    {
-        this.configuration = configuration;
-        this.maintenanceService = maintenanceService;
-        this.autoNotificationController = autoNotificationController;
-    }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
