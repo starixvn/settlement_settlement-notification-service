@@ -51,14 +51,7 @@ public class NotificationModel
 
     public string ActionName
     {
-        get
-        {
-            return MessageGroupId switch
-            {
-                MessageGroup.FastMarket => "Completed match with Auto-Settle FM turned OFF",
-                _ => actionName
-            };
-        }
+        get => MessageGroupId == MessageGroup.FastMarket ? "Completed match with Auto-Settle FM turned OFF" : actionName;
         set => actionName = value;
     }
 
@@ -68,14 +61,10 @@ public class NotificationModel
 
     public string MessageContent
     {
-        get
-        {
-            return MessageGroupId switch
-            {
-                MessageGroup.FastMarket => messageContent.Replace("@latest_settle_time", CreatedDate.ToString("MMM dd, yyyy hh:mm:ss tt")),
-                _ => messageContent
-            };
-        }
+        get =>
+            MessageGroupId == MessageGroup.FastMarket
+                ? messageContent.Replace("@latest_settle_time", CreatedDate.ToString("MMM dd, yyyy hh:mm:ss tt"))
+                : messageContent;
         set => messageContent = value;
     }
 

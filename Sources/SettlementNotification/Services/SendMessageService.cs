@@ -29,13 +29,12 @@ public class SendMessageServiceImp(
         var settings = appSettingsKey.Value;
         var isProdEnvironment = settings.EnvironmentName.Equals("PRO") && !isTest;
 
-        return groupId switch
+        if (groupId == LetstalkGroup.RefundReminder)
         {
-            LetstalkGroup.RefundReminder => isProdEnvironment
-                ? settings.Letstalk.UserGroupRefund
-                : settings.Letstalk.TestGroup,
-            _ => isProdEnvironment ? settings.Letstalk.UserGroupNotification : settings.Letstalk.TestGroup
-        };
+            return isProdEnvironment ? settings.Letstalk.UserGroupRefund : settings.Letstalk.TestGroup;
+        }
+
+        return isProdEnvironment ? settings.Letstalk.UserGroupNotification : settings.Letstalk.TestGroup;
     }
 
     private LetstalkModel CreateLetstalkMessageModel(string letstalkGroupName, string subject, string content)
