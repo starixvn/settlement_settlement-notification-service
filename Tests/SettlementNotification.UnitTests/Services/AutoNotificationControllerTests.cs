@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using NSubstitute;
+﻿using NSubstitute;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace SettlementNotification.UnitTests.Services;
@@ -9,7 +10,7 @@ namespace SettlementNotification.UnitTests.Services;
 public class AutoNotificationControllerTests
 {
     [Fact]
-    public void Process_HasNotification_InvokeProcessMethod()
+    public async Task Process_HasNotification_InvokeProcessMethod()
     {
         var notificationPoolService = Substitute.For<NotificationPoolService>();
         var notificationService = Substitute.For<NotificationService>();
@@ -27,7 +28,7 @@ public class AutoNotificationControllerTests
         notificationPoolService.PeekNewItem().Returns(list);
 
         // Act
-        controller.Process();
+        await controller.Process();
 
         // Assert
         notificationService.Received().Notify(list[0]);

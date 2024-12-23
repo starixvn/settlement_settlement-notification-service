@@ -1,5 +1,4 @@
 ﻿using Fanex.LetstalkService.Client;
-using Fanex.LetstalkService.Core.Services;
 using Fanex.Logging;
 using Fanex.RemotingRef;
 using Microsoft.Extensions.Options;

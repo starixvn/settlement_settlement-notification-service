@@ -1,6 +1,9 @@
 ﻿using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.Database;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using ONEbook.UM.Services;
 using SettlementNotification.Services;
 using System;
 using System.Threading;
@@ -12,64 +15,50 @@ public class SenderNotificationService(
     IConfiguration configuration,
     IMaintenanceService maintenanceService,
     AutoNotificationController autoNotificationController)
-    : IHostedService
+    : BackgroundService
 {
-    private bool running;
-
     private int counter;
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        running = true;
-        var thread = new Thread(ThreadProcess);
-        Console.WriteLine($"Starting at {DateTime.Now}");
-        thread.Start();
-        return Task.CompletedTask;
-    }
+        using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(configuration.GetValue<int>("ServiceInterval")));
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        running = false;
-        Console.WriteLine($"Stopping at {DateTime.Now}");
-        return Task.CompletedTask;
-    }
-
-    private void ThreadProcess()
-    {
-        while (running)
+        while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            if (!maintenanceService.IsMaintenance)
-            {
-                MainProcess();
-                var interval = configuration.GetSection("ServiceInterval").Value ?? "0";
-                Thread.Sleep(int.Parse(interval));
-            }
+            await HandleAutoAsync();
         }
     }
 
-    private void MainProcess()
+    private async Task HandleAutoAsync()
     {
         try
         {
-            autoNotificationController.Process();
-            HandleGarbageCollector();
+            var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
+            if (!isMaintenance)
+            {
+                await autoNotificationController.Process();
+                HandleGarbageCollector();
+            }
         }
         catch (Exception exception)
         {
-            LogService.Error("Fanex.SettlementNotification.Service: ", exception);
+            var logMessage = new LogMessage(exception.Message)
+                .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(exception))
+                .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
+                .ToString();
+            await LogService.ErrorAsync(logMessage);
         }
     }
 
     private void HandleGarbageCollector()
     {
-        var collectionInterval = configuration.GetSection("GarbageCollectorInterval").Value ?? "0";
-        if (counter >= int.Parse(collectionInterval))
+        if (counter >= configuration.GetValue<int>("GarbageCollectorInterval"))
         {
             counter = 0;
             GC.WaitForPendingFinalizers();
         }
-        var interval = configuration.GetSection("ServiceInterval").Value ?? "0";
 
-        counter += int.Parse(interval);
+        counter += configuration.GetValue<int>("ServiceInterval");
     }
 }

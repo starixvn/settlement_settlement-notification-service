@@ -1,10 +1,12 @@
-﻿namespace SettlementNotification.Services;
+﻿using System.Threading.Tasks;
+
+namespace SettlementNotification.Services;
 
 using Models;
 
 public interface NotificationPoolService
 {
-    List<NotificationModel> PeekNewItem();
+    Task<List<NotificationModel>> PeekNewItem();
 
     void Remove(int id);
 }
@@ -15,9 +17,9 @@ public class NotificationPoolServiceImp(QueryService queryService) : Notificatio
 
     public List<NotificationModel> PoolOfNotification { get; set; } = [];
 
-    public List<NotificationModel> PeekNewItem()
+    public async Task<List<NotificationModel>> PeekNewItem()
     {
-        var list = queryService.GetAllMessageByEnv();
+        var list = await queryService.GetAllMessageByEnv();
 
         lock (lockObject)
         {

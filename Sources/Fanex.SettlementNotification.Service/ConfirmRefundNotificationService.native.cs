@@ -10,11 +10,11 @@ namespace Fanex.SettlementNotification.Service;
 public class ConfirmRefundNotificationService(
     IConnectionMultiplexer connectionMultiplexer,
     ConfirmRefundService confirmRefundService)
-    : IHostedService
+    : BackgroundService
 {
     private const string ExpiredKeysChannel = "__keyspace@13__:*";
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var subscriber = connectionMultiplexer.GetSubscriber();
 
@@ -42,10 +42,5 @@ public class ConfirmRefundNotificationService(
             return channel[(index + 1)..];
         }
         return channel;
-    }
-
-    public async Task StopAsync(CancellationToken cancellationToken)
-    {
-        await Task.CompletedTask;
     }
 }

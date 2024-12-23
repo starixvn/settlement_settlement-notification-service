@@ -1,42 +1,38 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using NSubstitute;
+﻿using NSubstitute;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace SettlementNotification.UnitTests.Services;
 
 public class NotificationPoolServiceTests
 {
-    private readonly QueryService queryService;
+    private readonly QueryService queryService = Substitute.For<QueryService>();
 
-    public NotificationPoolServiceTests()
-    {
-        queryService = Substitute.For<QueryService>();
-    }
-
-    private List<NotificationModel> CreateMessage(params int[] messageIds)
+    private static List<NotificationModel> CreateMessage(params int[] messageIds)
     {
         return messageIds.Select(i => new NotificationModel { MessageId = i }).ToList();
     }
 
     [Fact]
-    public void PeekNewItem_Twice_OnlyAddNewMessageToPool()
+    public async Task PeekNewItem_Twice_OnlyAddNewMessageToPool()
     {
         var service = new NotificationPoolServiceImp(queryService);
         queryService.GetAllMessageByEnv().Returns(CreateMessage(1, 3));
-        service.PeekNewItem();
+        await service.PeekNewItem();
 
         queryService.GetAllMessageByEnv().Returns(CreateMessage(2, 3));
-        var items = service.PeekNewItem();
+        var items = await service.PeekNewItem();
 
         Assert.Equal(3, service.PoolOfNotification.Count);
         Assert.Single(items);
     }
 
     [Fact]
-    public void Remove_ExistedMessageId_ReturnOneNotificationOnPool()
+    public async Task Remove_ExistedMessageId_ReturnOneNotificationOnPool()
     {
         // Arrange
         var messages = CreateMessage(1, 2);
@@ -44,7 +40,7 @@ public class NotificationPoolServiceTests
         queryService.GetAllMessageByEnv().Returns(messages);
 
         // Act
-        service.PeekNewItem();
+        await service.PeekNewItem();
         service.Remove(1);
 
         // Assert

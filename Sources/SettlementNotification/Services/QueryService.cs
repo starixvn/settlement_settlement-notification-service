@@ -1,4 +1,6 @@
-﻿namespace SettlementNotification.Services;
+﻿using System.Threading.Tasks;
+
+namespace SettlementNotification.Services;
 
 using Constants;
 using Criteria;
@@ -6,19 +8,19 @@ using Models;
 
 public interface QueryService
 {
-    List<NotificationModel> GetAllMessageByEnv();
+    Task<List<NotificationModel>> GetAllMessageByEnv();
 
-    void UpdateFlag(int id);
+    Task UpdateFlag(int id);
 }
 
 public class QueryServiceImp(IDynamicRepository repository, ICache cache, IOptions<AppSettingsKey> appSettingsKey)
     : QueryService
 {
-    public List<NotificationModel> GetAllMessageByEnv()
+    public async Task<List<NotificationModel>> GetAllMessageByEnv()
     {
-        var matches = GetAllMessage();
+        var matches = await GetAllMessage();
 
-        cache.TryGet(CacheKeys.KeyLeagueId, out int leagueId);
+        var (_, leagueId) = await cache.TryGetAsync<int>(CacheKeys.KeyLeagueId);
 
         return appSettingsKey.Value.EnvironmentName switch
         {
@@ -28,17 +30,15 @@ public class QueryServiceImp(IDynamicRepository repository, ICache cache, IOptio
         };
     }
 
-    public void UpdateFlag(int id)
+    public async Task UpdateFlag(int id)
     {
         var criteria = new UpdateFlagCriteria { MessageId = id };
-        repository.Execute(criteria);
+        await repository.ExecuteAsync(criteria);
     }
 
-    private List<NotificationModel> GetAllMessage()
+    private async Task<List<NotificationModel>> GetAllMessage()
     {
         var criteria = new GetAllMessageCriteria();
-        var matches = repository.Fetch<NotificationModel>(criteria);
-
-        return matches.ToList();
+        return (await repository.FetchAsync<NotificationModel>(criteria)).ToList();
     }
 }

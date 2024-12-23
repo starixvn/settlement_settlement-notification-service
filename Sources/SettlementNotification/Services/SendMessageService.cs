@@ -2,6 +2,7 @@
 
 namespace SettlementNotification.Services;
 
+using Fanex.LetstalkService.Client.Models;
 using Models;
 
 public interface SendMessageService
