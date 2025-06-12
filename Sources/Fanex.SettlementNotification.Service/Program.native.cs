@@ -14,7 +14,7 @@ var services = builder.Services;
 services.Configure<AppSettingsKey>(builder.Configuration)
     .AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettingsKey>>().Value);
 
-services.AddOneBookUm(builder.Configuration);
+services.AddOneBookUmForService(builder.Configuration);
 
 services.AddFanexLogSentry(builder.Configuration);
 
