@@ -7,6 +7,7 @@ public static class MessageGroup
     public const int FastMarket = 2;
 
     public const int ConfirmRefund = 3;
+    public const int MatchReadyToMove = 4;
 }
 
 public static class LetstalkGroup

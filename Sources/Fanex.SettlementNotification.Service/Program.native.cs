@@ -4,7 +4,9 @@ using Fanex.SettlementNotification.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Notification.MoveTickets;
 using ONEbook.UM.DependencyInjection;
+using Quartz;
 using SettlementNotification.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,8 +25,12 @@ services.ConfigInternalService(builder.Configuration);
 
 services.AddConfigRedisCache(builder.Configuration);
 
+services.AddMoveTickets(builder.Configuration);
+
 services.AddHostedService<SenderNotificationService>();
 services.AddHostedService<ConfirmRefundNotificationService>();
+
+services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 services.AddHealthChecks();
 
