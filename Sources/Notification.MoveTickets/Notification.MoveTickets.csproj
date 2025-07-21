@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fanex.Caching" Version="2.2.8" />
     <PackageReference Include="Fanex.Data.Repository" Version="4.3.4.3" />
     <PackageReference Include="Quartz.AspNetCore" Version="3.14.0" />
   </ItemGroup>

@@ -6,11 +6,11 @@ public class GetMatchesReadyToMoveCriteria : CriteriaBase
 {
     public override string GetSettingKey()
     {
-        throw new NotImplementedException();
+        return "NAP_Admin_Settlement_GetMatchesReadyToMove";
     }
 
     public override bool IsValid()
     {
-        throw new NotImplementedException();
+        return true;
     }
 }
