@@ -19,11 +19,6 @@ public static class QuartzConfiguration
                 readyJobKey,
                 moveTicketsJobSettings.MatchReadyToMoveJob.CronExpression);
 
-            // Job MoveTicketsJob
-            var moveJobKey = new JobKey(nameof(MoveTicketsJob));
-            q.AddJobAndTrigger<MoveTicketsJob>(
-                moveJobKey,
-                moveTicketsJobSettings.MoveTicketsJob.CronExpression);
         });
 
         return services;

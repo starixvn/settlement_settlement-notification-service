@@ -55,7 +55,7 @@ public class NotificationModel
         set => actionName = value;
     }
 
-    public DateTime KickOffTime { get; set; }
+    public DateTime? KickOffTime { get; set; }
 
     public DateTime CreatedDate { get; set; }
 

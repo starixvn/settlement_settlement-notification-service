@@ -13,4 +13,15 @@
 		<Setting Key="NAP_Set_CheckRunningTicket_ByResourceID_DBSITE02" SpName="NAP_Set_CheckRunningTicket_ByResourceID" DbName="DBSITE02.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_CheckRunningTicket_ByResourceID_DBSITE03" SpName="NAP_Set_CheckRunningTicket_ByResourceID" DbName="DBSITE03.bodb02.wsv_nap" />
 	</Function>
+
+	<Function Name="MoveTicket">
+		<Setting Key="NAP_Admin_Settlement_AutoMove_MatchInfo" SpName="NAP_Admin_Settlement_AutoMove_MatchInfo_xpre" DbName="DBPRO.bodb02.wsv_nap" />
+		<Function Name="NAP_Admin_Settlement_AutoMove_TicketInfo">
+			<Setting Key="NAP_Admin_Settlement_AutoMove_TicketInfo_DBTXN" SpName="NAP_Admin_Settlement_AutoMove_TicketInfo_xpre" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_AutoMove_TicketInfo_DBSITE01" SpName="NAP_Admin_Settlement_AutoMove_TicketInfo_xpre" DbName="DBSITE01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_AutoMove_TicketInfo_DBSITE02" SpName="NAP_Admin_Settlement_AutoMove_TicketInfo_xpre" DbName="DBSITE02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_AutoMove_TicketInfo_DBSITE03" SpName="NAP_Admin_Settlement_AutoMove_TicketInfo_xpre" DbName="DBSITE03.bodb02.wsv_nap" />
+		</Function>
+	</Function>
+	
 </Functions>

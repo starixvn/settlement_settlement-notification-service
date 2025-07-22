@@ -1,37 +1,24 @@
-﻿using Fanex.Data.Repository;
+﻿using Fanex.Caching;
 using Microsoft.Extensions.Logging;
+using Notification.MoveTickets.Features.GetMatchesReadyToMove;
+using Notification.MoveTickets.Features.GetMatchTicketInfo;
 using Quartz;
 using SettlementNotification.Constants;
 using SettlementNotification.Criteria;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
-using Notification.MoveTickets.Features.GetMatchesReadyToMove;
-using Notification.MoveTickets.Models;
 
 namespace Notification.MoveTickets.Jobs;
 
 [DisallowConcurrentExecution]
-public class MatchReadyToMoveJob : IJob
+public class MatchReadyToMoveJob(
+    ILogger<MatchReadyToMoveJob> logger,
+    NotificationService notificationService,
+    IGetMatchesReadyToMoveHandler getMatchesHandler,
+    IGetMatchTicketInfoHandler getMatchTicketInfoHandler,
+    ICacheService cacheService) : IJob
 {
-    private readonly ILogger<MatchReadyToMoveJob> logger;
-    private readonly IDynamicRepository repository;
-    private readonly NotificationService notificationService;
-    private readonly MatchService matchService;
-    private readonly GetMatchesReadyToMoveHandler getMatchesHandler;
-
-    public MatchReadyToMoveJob(
-        ILogger<MatchReadyToMoveJob> logger,
-        IDynamicRepository repository,
-        NotificationService notificationService,
-        MatchService matchService,
-        GetMatchesReadyToMoveHandler getMatchesHandler)
-    {
-        this.logger = logger;
-        this.repository = repository;
-        this.notificationService = notificationService;
-        this.matchService = matchService;
-        this.getMatchesHandler = getMatchesHandler;
-    }
+    private const string AutoMoveStatusKey = "Settlement-AutoMoveStatus";
 
     public async Task Execute(IJobExecutionContext context)
     {
@@ -39,48 +26,18 @@ public class MatchReadyToMoveJob : IJob
 
         try
         {
-            // Get eligible matches for moving tickets
-            var eligibleMatches = await getMatchesHandler.HandleAsync();
+            var isAutoMoveEnabled = await GetAutoMoveStatus();
+            var matches = await GetEligibleMatches();
 
-            if (!eligibleMatches.Any())
+            if (matches.Count == 0)
             {
                 logger.LogInformation("No eligible matches found for moving tickets");
                 return;
             }
 
-            // Separate matches by sport type
-            var baseballMatches = eligibleMatches.Where(m => m.SportType == SportType.Baseball).ToList();
-            var cricketMatches = eligibleMatches.Where(m => m.SportType == SportType.Cricket).ToList();
+            InsertAndSendNotify(matches, isAutoMoveEnabled);
 
-            // Check for on-hold matches
-            var onHoldMatches = await GetOnHoldMatches(eligibleMatches);
-
-            // Check for matches without child matches
-            var matchesWithoutChild = await GetMatchesWithoutChildMatches(eligibleMatches);
-
-            // Create notification content
-            var content = CreateContent(new
-            {
-                BaseballMatches = baseballMatches,
-                CricketMatches = cricketMatches,
-                OnHoldMatches = onHoldMatches,
-                MatchesWithoutChild = matchesWithoutChild,
-                ExecutionTime = DateTimeOffset.Now.AddMinutes(15).ToString("HH:mm") + " GMT-4"
-            });
-
-            // Send notification
-            var notificationModel = new NotificationModel
-            {
-                MatchId = 0, // System notification, not tied to specific match
-                ActionName = "Auto move tickets of settled results",
-                MessageGroupId = MessageGroup.MatchReadyToMove,
-                MessageContent = content
-            };
-
-            notificationService.Notify(notificationModel);
-
-            logger.LogInformation("MatchReadyToMoveJob completed successfully. Eligible matches: {BaseballCount} baseball, {CricketCount} cricket",
-                baseballMatches.Count, cricketMatches.Count);
+            logger.LogInformation("MatchReadyToMoveJob completed successfully at {Time}", DateTimeOffset.Now);
         }
         catch (Exception ex)
         {
@@ -89,92 +46,115 @@ public class MatchReadyToMoveJob : IJob
         }
     }
 
-    private async Task<List<Match>> GetOnHoldMatches(List<Match> eligibleMatches)
+    private void InsertAndSendNotify(List<Match> matches, bool isAutoMoveEnabled)
     {
-        var onHoldMatches = new List<Match>();
+        var content = CreateContent(matches, isAutoMoveEnabled);
 
-        foreach (var match in eligibleMatches)
+        var criteria = new AddNotificationCriteria
         {
-            var matchDetail = await matchService.GetMatchDetails(match.MatchId);
-            if (matchDetail?.EventStatus == "OnHold")
+            ActionName = "Auto move tickets of settled results",
+            MessageGroupId = MessageGroup.MatchReadyToMove,
+            StatusId = 255,
+            MessageContent = content
+        };
+
+        //await repository.ExecuteAsync(criteria);
+
+
+        var notificationModel = new NotificationModel
+        {
+            ActionName = criteria.ActionName,
+            MessageContent = content,
+            MessageId = criteria.MessageId,
+            MessageType = criteria.MessageType,
+            MessageGroupId = criteria.MessageGroupId,
+            //IsTest = matchDetail.IsTest,
+            LetstalkGroup = LetstalkGroup.Notification
+        };
+
+        notificationService.Notify(notificationModel);
+    }
+
+    private async Task<List<Match>> GetEligibleMatches()
+    {
+        var matches = await getMatchesHandler.HandleAsync();
+        var tickets = await getMatchTicketInfoHandler.HandleAsync([.. matches.Select(m => m.MatchId)]);
+
+        return [.. matches.Where(m => tickets.Exists(t => t.MatchId == m.MatchId && t.IsExistsSettledTicket))];
+    }
+
+    private static List<Match> GetOnHoldMatches(List<Match> eligibleMatches)
+        => [.. eligibleMatches.Where(m => m.Remark.IsPending || m.Remark.IsUndecided || m.Remark.IsUnderSettle || m.Remark.IsMtdHold || m.Remark.IsKeyHold)];
+
+    private static List<Match> GetMatchesWithoutChildMatches(List<Match> eligibleMatches)
+        => [.. eligibleMatches.Where(m => m.ChildMatchId == null || m.ChildMatchId == 0)];
+
+    private static string CreateContent(List<Match> matches, bool isAutoMoveEnabled)
+    {
+        var baseballMatches = matches.Where(m => m.SportType == SportType.Baseball).ToList();
+        var cricketMatches = matches.Where(m => m.SportType == SportType.Cricket).ToList();
+        var onHoldMatches = GetOnHoldMatches(matches);
+        var matchesWithoutChild = GetMatchesWithoutChildMatches(matches);
+
+        return BuildContent(isAutoMoveEnabled, baseballMatches, cricketMatches, onHoldMatches, matchesWithoutChild);
+    }
+
+    private static string BuildContent(bool isAutoMoveEnabled, List<Match> baseballMatches, List<Match> cricketMatches, List<Match> onHoldMatches, List<Match> matchesWithoutChild)
+    {
+        var content = new List<string>
+        {
+            $"Auto move tickets of settled results service = {(isAutoMoveEnabled ? "ON" : "OFF")}.\n",
+            "System detect following matches eligible for moving tickets of settled results:\n"
+        };
+
+        if (baseballMatches.Count > 0)
+        {
+            content.Add($"+ Baseball: {string.Join(", ", baseballMatches.Select(x => x.MatchId))}\n");
+        }
+
+        if (cricketMatches.Count > 0)
+        {
+            content.Add($"+ Cricket: {string.Join(", ", cricketMatches.Select(x => x.MatchId))}\n");
+        }
+
+        content.Add("\nMatches need resolve:\n");
+
+        if (onHoldMatches.Count > 0)
+        {
+            content.Add($"+ matches on-hold: {string.Join(", ", onHoldMatches.Select(x => x.MatchId))}\n");
+        }
+
+        if (matchesWithoutChild.Count > 0)
+        {
+            content.Add($"+ matches without corresponding child-match to move tickets: {string.Join(", ", matchesWithoutChild.Select(x => x.MatchId))}\n");
+        }
+
+        content.AddRange(new[]
+        {
+            $"\nSystem shall execute move actions in the next 15 minutes (23:45 GMT-4).\n",
+            "Unresolved matches will not be moved.\n",
+            "System shall also move ticket on new match found that eligible to move tickets."
+        });
+
+        return string.Join("", content);
+    }
+
+    private async Task<bool> GetAutoMoveStatus()
+    {
+        try
+        {
+            var isExistedKey = await cacheService.ContainAsync(AutoMoveStatusKey);
+            if (isExistedKey)
             {
-                onHoldMatches.Add(match);
+                var (_, value) = await cacheService.TryGetAsync<bool>(AutoMoveStatusKey);
+                return value;
             }
+
+            return false;
         }
-
-        return onHoldMatches;
-    }
-
-    private async Task<List<Match>> GetMatchesWithoutChildMatches(List<Match> eligibleMatches)
-    {
-        var matchesWithoutChild = new List<Match>();
-
-        foreach (var match in eligibleMatches)
+        catch
         {
-            var moveTicketInfo = await GetMoveTicketInfo(match.MatchId);
-            if (moveTicketInfo == null || moveTicketInfo.ChildMatchId <= 0)
-            {
-                matchesWithoutChild.Add(match);
-            }
+            return false;
         }
-
-        return matchesWithoutChild;
-    }
-
-    private async Task<MoveTicketInfo> GetMoveTicketInfo(int matchId)
-    {
-        var criteria = new GetMoveTicketInfoCriteria { MatchId = matchId };
-        return await repository.GetAsync<MoveTicketInfo>(criteria);
-    }
-
-    private string CreateContent(object data)
-    {
-        var baseballMatches = ((dynamic)data).BaseballMatches as List<Match>;
-        var cricketMatches = ((dynamic)data).CricketMatches as List<Match>;
-        var onHoldMatches = ((dynamic)data).OnHoldMatches as List<Match>;
-        var matchesWithoutChild = ((dynamic)data).MatchesWithoutChild as List<Match>;
-        var executionTime = ((dynamic)data).ExecutionTime as string;
-
-        var content = "Auto move tickets of settled results service = @move_setting.\n\n";
-
-        content += "System detect following matches eligible for moving tickets of settled results:\n";
-
-        if (baseballMatches?.Count > 0)
-        {
-            content += $"+ Baseball: @baseball_match ({baseballMatches.Count} matches)\n";
-        }
-
-        if (cricketMatches?.Count > 0)
-        {
-            content += $"+ Cricket: @cricket_match_to ({cricketMatches.Count} matches)\n";
-        }
-
-        if ((baseballMatches?.Count ?? 0) == 0 && (cricketMatches?.Count ?? 0) == 0)
-        {
-            content += "+ No eligible matches found\n";
-        }
-
-        content += "\nMatches need resolve:\n";
-
-        if (onHoldMatches?.Count > 0)
-        {
-            content += $"+ matches on-hold: @match_onhold ({onHoldMatches.Count} matches)\n";
-        }
-
-        if (matchesWithoutChild?.Count > 0)
-        {
-            content += $"+ matches without corresponding child-match to move tickets: @match_nochild ({matchesWithoutChild.Count} matches)\n";
-        }
-
-        if ((onHoldMatches?.Count ?? 0) == 0 && (matchesWithoutChild?.Count ?? 0) == 0)
-        {
-            content += "+ No matches need resolution\n";
-        }
-
-        content += $"\nSystem shall execute move actions in the next 15 minutes ({executionTime}).\n";
-        content += "Unresolved matches will not be moved.\n";
-        content += "System shall also move ticket on new match found that eligible to move tickets.";
-
-        return content;
     }
 }

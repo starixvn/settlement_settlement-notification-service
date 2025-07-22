@@ -4,58 +4,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Notification.MoveTickets.Features.GetMatchesReadyToMove;
 
-public class GetMatchesReadyToMoveHandler
+public interface IGetMatchesReadyToMoveHandler
 {
-    private readonly IDynamicRepository repository;
-    private readonly ILogger<GetMatchesReadyToMoveHandler> logger;
-    private readonly ICacheService cacheService;
-    private const string AutoMoveStatusKey = "Settlement-AutoMoveStatus";
+    Task<List<Match>> HandleAsync();
+}
 
-    public GetMatchesReadyToMoveHandler(
-        IDynamicRepository repository,
-        ILogger<GetMatchesReadyToMoveHandler> logger,
-        ICacheService cacheService)
-    {
-        this.repository = repository;
-        this.logger = logger;
-        this.cacheService = cacheService;
-    }
-
+public class GetMatchesReadyToMoveHandler(
+    IDynamicRepository repository
+ ) : IGetMatchesReadyToMoveHandler
+{
     public async Task<List<Match>> HandleAsync()
     {
-        try
-        {
-            var criteria = new GetMatchesReadyToMoveCriteria();
-            var matches = await repository.FetchAsync<Match>(criteria);
-            var isAutoMoveEnabled = await GetAutoMoveStatus();
+        var criteria = new GetMatchesReadyToMoveCriteria();
+        var matches = await repository.FetchAsync<Match>(criteria);
 
-            logger.LogInformation("Found {Count} eligible matches for moving tickets", matches.Count());
-
-            return matches.ToList();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error occurred while getting matches ready to move");
-            throw;
-        }
-    }
-
-    private async Task<bool> GetAutoMoveStatus()
-    {
-        try
-        {
-            var isExistedKey = await cacheService.ContainAsync(AutoMoveStatusKey);
-            if (isExistedKey)
-            {
-                var (_, value) = await cacheService.TryGetAsync<bool>(AutoMoveStatusKey);
-                return value;
-            }
-
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
+        return [.. matches];
     }
 }

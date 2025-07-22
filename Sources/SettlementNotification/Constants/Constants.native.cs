@@ -20,8 +20,8 @@ public static class LetstalkGroup
 public static class SportType
 {
     public const short Soccer = 1;
-    public const short Baseball = 2;
-    public const short Cricket = 3;
+    public const short Baseball = 8;
+    public const short Cricket = 50;
 }
 
 public static class SettlementStatus
