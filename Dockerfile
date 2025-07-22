@@ -2,6 +2,7 @@ FROM hub.nexdev.net/base/dotnet/core/sdk:9.0-alpine AS builder
 WORKDIR /src
 
 COPY ./Sources/SettlementNotification ./SettlementNotification
+COPY ./Sources/Notification.MoveTickets ./Notification.MoveTickets
 COPY ./Sources/Fanex.SettlementNotification.Service/Fanex.SettlementNotification.Service.csproj ./Fanex.SettlementNotification.Service/Fanex.SettlementNotification.Service.csproj
 
 WORKDIR /src/Fanex.SettlementNotification.Service
