@@ -1,4 +1,5 @@
-﻿using SettlementNotification.Criteria;
+﻿using Fanex.SiteDbConnectionManager.Client.Services;
+using SettlementNotification.Criteria;
 using SettlementNotification.Models;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ public interface MatchService
 public class MatchServiceImp(
     IDynamicRepository repository,
     RefDataService refDataService,
-    IOptions<AppSettingsKey> appSettingsKey)
+    SiteDbClientService siteDbClientService)
     : MatchService
 {
     public async Task<MatchDetail> GetMatchDetails(int matchId)
@@ -54,7 +55,9 @@ public class MatchServiceImp(
             ResourceIds = resourceId
         };
 
-        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => CheckRunningTicketOneSite(s, criteria));
+        var sitesDb = await siteDbClientService.GetActiveSiteDbAsync();
+
+        var tasks = sitesDb.Select(s => CheckRunningTicketOneSite(s.SiteName, criteria));
 
         var result = await Task.WhenAll(tasks);
 

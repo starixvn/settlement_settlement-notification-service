@@ -1,5 +1,3 @@
-using System;
-
 namespace Notification.MoveTickets.Models;
 
 public class MoveTicketsJobSettings
@@ -7,7 +5,6 @@ public class MoveTicketsJobSettings
     public JobSchedule MatchReadyToMoveJob { get; set; } = new();
     public JobSchedule MoveTicketsJob { get; set; } = new();
 }
-
 
 public class JobSchedule
 {

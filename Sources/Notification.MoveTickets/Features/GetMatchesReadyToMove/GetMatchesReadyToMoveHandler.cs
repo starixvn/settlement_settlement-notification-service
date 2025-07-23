@@ -1,6 +1,4 @@
-﻿using Fanex.Caching;
-using Fanex.Data.Repository;
-using Microsoft.Extensions.Logging;
+﻿using Fanex.Data.Repository;
 
 namespace Notification.MoveTickets.Features.GetMatchesReadyToMove;
 

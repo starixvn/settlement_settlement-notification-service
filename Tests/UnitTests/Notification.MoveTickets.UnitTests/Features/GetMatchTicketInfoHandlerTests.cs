@@ -1,8 +1,8 @@
 ﻿using Fanex.Data.Repository;
-using Microsoft.Extensions.Options;
+using Fanex.SiteDbConnectionManager.Client.Models;
+using Fanex.SiteDbConnectionManager.Client.Services;
 using Notification.MoveTickets.Features.GetMatchTicketInfo;
 using NSubstitute;
-using SettlementNotification.Models;
 using Xunit;
 
 namespace Notification.MoveTickets.UnitTests.Features
@@ -10,18 +10,18 @@ namespace Notification.MoveTickets.UnitTests.Features
     public class GetMatchTicketInfoHandlerTests
     {
         private readonly IDynamicRepository repositorySub;
-        private readonly IOptions<AppSettingsKey> options;
         private readonly GetMatchTicketInfoHandler handler;
 
         public GetMatchTicketInfoHandlerTests()
         {
             repositorySub = Substitute.For<IDynamicRepository>();
-            var appSettings = new AppSettingsKey
-            {
-                SiteDbServer = new List<string> { "Server1", "Server2" }
-            };
-            options = Options.Create(appSettings);
-            handler = new GetMatchTicketInfoHandler(repositorySub, options);
+            var siteDbClientService = Substitute.For<SiteDbClientService>();
+            siteDbClientService.GetActiveSiteDbAsync().Returns([
+                new SiteDb { SiteName = "Server1", SiteDbGroupId = 1 },
+                new SiteDb { SiteName = "Server2", SiteDbGroupId = 1 }
+            ]);
+
+            handler = new GetMatchTicketInfoHandler(repositorySub, siteDbClientService);
         }
 
         [Fact]
@@ -49,15 +49,15 @@ namespace Notification.MoveTickets.UnitTests.Features
 
             // Assert
             Assert.Equal(2, result.Count);
-            Assert.Contains(result, t => t.MatchId == 1 && t.IsExistsSettledTicket);
-            Assert.Contains(result, t => t.MatchId == 2 && t.IsExistsSettledTicket);
+            Assert.Contains(result, t => t is { MatchId: 1, IsExistsSettledTicket: true });
+            Assert.Contains(result, t => t is { MatchId: 2, IsExistsSettledTicket: true });
         }
 
         [Fact]
         public async Task HandleAsync_WithEmptyMatchIds_ReturnsEmptyList()
         {
             // Act
-            var result = await handler.HandleAsync(new List<int>());
+            var result = await handler.HandleAsync([]);
 
             // Assert
             Assert.Empty(result);

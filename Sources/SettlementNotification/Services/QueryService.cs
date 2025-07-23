@@ -13,7 +13,7 @@ public interface QueryService
     Task UpdateFlag(int id);
 }
 
-public class QueryServiceImp(IDynamicRepository repository, ICache cache, IOptions<AppSettingsKey> appSettingsKey)
+public class QueryServiceImp(IDynamicRepository repository, ICacheService cache, IOptions<AppSettingsKey> appSettingsKey)
     : QueryService
 {
     public async Task<List<NotificationModel>> GetAllMessageByEnv()

@@ -1,6 +1,5 @@
 ﻿using Fanex.Data.Repository;
-using Microsoft.Extensions.Options;
-using SettlementNotification.Models;
+using Fanex.SiteDbConnectionManager.Client.Services;
 
 namespace Notification.MoveTickets.Features.GetMatchTicketInfo;
 
@@ -11,19 +10,16 @@ public interface IGetMatchTicketInfoHandler
 
 public class GetMatchTicketInfoHandler(
     IDynamicRepository repository,
-    IOptions<AppSettingsKey> options) : IGetMatchTicketInfoHandler
+    SiteDbClientService siteDbClientService) : IGetMatchTicketInfoHandler
 {
-    private readonly AppSettingsKey appSettingsKey = options.Value;
-
     public async Task<List<TicketInfo>> HandleAsync(List<int> matchIds)
     {
         var criteria = new GetMatchTicketInfoCriteria()
         {
             ListMatchIds = string.Join(",", matchIds)
         };
-
-        var tasks = appSettingsKey.SiteDbServer
-                .Select(s => GetTicketInfosBySiteAsync(criteria, s))
+        var sitesDb = await siteDbClientService.GetActiveSiteDbAsync();
+        var tasks = sitesDb.Select(s => GetTicketInfosBySiteAsync(criteria, s.SiteName))
                 .ToArray();
 
         var result = await Task.WhenAll(tasks);
@@ -33,13 +29,11 @@ public class GetMatchTicketInfoHandler(
             .Select(x => new TicketInfo
             {
                 MatchId = x.Key,
-                IsExistsSettledTicket = x.ToList().Exists(x => x.IsExistsSettledTicket)
+                IsExistsSettledTicket = x.ToList().Exists(ticketInfo => ticketInfo.IsExistsSettledTicket)
             })
             .ToList();
 
-
         return tickets;
-
     }
 
     private async Task<List<TicketInfo>> GetTicketInfosBySiteAsync(GetMatchTicketInfoCriteria criteria, string server)
