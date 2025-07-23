@@ -2,8 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Notification.MoveTickets.Features.GetMatchesReadyToMove;
 using Notification.MoveTickets.Features.GetMatchTicketInfo;
-using Notification.MoveTickets.Jobs;
-using SettlementNotification.Services;
+using Notification.MoveTickets.Services;
 
 namespace Notification.MoveTickets;
 
@@ -13,10 +12,9 @@ public static class MoveTicketsExtensions
     {
         services
             .AddQuartzServices(configuration)
-            .AddScoped<MatchReadyToMoveJob>()
-            .AddScoped<MatchService, MatchServiceImp>()
             .AddScoped<IGetMatchesReadyToMoveHandler, GetMatchesReadyToMoveHandler>()
-            .AddScoped<IGetMatchTicketInfoHandler, GetMatchTicketInfoHandler>();
+            .AddScoped<IGetMatchTicketInfoHandler, GetMatchTicketInfoHandler>()
+            .AddScoped<INotificationContentService, NotificationContentService>();
 
         return services;
     }

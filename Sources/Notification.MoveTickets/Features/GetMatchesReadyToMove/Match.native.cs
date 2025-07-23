@@ -15,18 +15,18 @@ public class Match
     public RemarkSettingModel Remark => new(SettlementStatus);
 }
 
-
 public class RemarkSettingModel
 {
-    private const int ConvertToBase = 2;
+    private const int BinaryBase = 2;
+    private const char ActiveFlag = '1';
 
-    private const int UnderSettlePosition = 2;
+    private const int PendingBitPosition = 0;
+    private const int UndecidedBitPosition = 1;
+    private const int UnderSettleBitPosition = 2;
+    private const int MtdHoldBitPosition = 4;
+    private const int KeyHoldBitPosition = 6;
 
-    private const int MtdHoldPosition = 4;
-
-    private const int KeyHoldPosition = 6;
-
-    public string SettlementStatus { get; set; } = string.Empty;
+    private string SettlementStatus { get; set; } = string.Empty;
 
     public RemarkSettingModel()
     {
@@ -34,16 +34,44 @@ public class RemarkSettingModel
 
     public RemarkSettingModel(byte settlementStatus)
     {
-        SettlementStatus = new string([.. Convert.ToString(settlementStatus, ConvertToBase).Reverse()]);
+        SettlementStatus = ConvertSettlementStatusToBinaryString(settlementStatus);
     }
 
-    public bool IsPending => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus[0].Equals('1');
+    public bool IsPending => IsBitSet(PendingBitPosition);
 
-    public bool IsUndecided => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > 1 && SettlementStatus[1].Equals('1');
+    public bool IsUndecided => IsBitSet(UndecidedBitPosition);
 
-    public bool IsUnderSettle => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > UnderSettlePosition && SettlementStatus[UnderSettlePosition].Equals('1');
+    public bool IsUnderSettle => IsBitSet(UnderSettleBitPosition);
 
-    public bool IsMtdHold => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > MtdHoldPosition && SettlementStatus[MtdHoldPosition].Equals('1');
+    public bool IsMtdHold => IsBitSet(MtdHoldBitPosition);
 
-    public bool IsKeyHold => !string.IsNullOrWhiteSpace(SettlementStatus) && SettlementStatus.Length > KeyHoldPosition && SettlementStatus[KeyHoldPosition].Equals('1');
+    public bool IsKeyHold => IsBitSet(KeyHoldBitPosition);
+
+    private static string ConvertSettlementStatusToBinaryString(byte settlementStatus)
+    {
+        var binaryString = Convert.ToString(settlementStatus, BinaryBase);
+        return new string(binaryString.Reverse().ToArray());
+    }
+
+    private bool IsBitSet(int bitPosition)
+    {
+        return HasValidSettlementStatus() &&
+               IsValidBitPosition(bitPosition) &&
+               IsBitActive(bitPosition);
+    }
+
+    private bool HasValidSettlementStatus()
+    {
+        return !string.IsNullOrWhiteSpace(SettlementStatus);
+    }
+
+    private bool IsValidBitPosition(int bitPosition)
+    {
+        return SettlementStatus.Length > bitPosition;
+    }
+
+    private bool IsBitActive(int bitPosition)
+    {
+        return SettlementStatus[bitPosition].Equals(ActiveFlag);
+    }
 }

@@ -11,26 +11,28 @@ public static class QuartzConfiguration
     public static IServiceCollection AddQuartzServices(this IServiceCollection services, IConfiguration configuration)
     {
         var moveTicketsJobSettings = configuration.GetSection("MoveTicketsJobs").Get<MoveTicketsJobSettings>() ?? new();
-        services.AddQuartz(q =>
+        
+        services.AddQuartz(quartzConfigurator =>
         {
-            // Job MatchReadyToMoveJob
-            var readyJobKey = new JobKey(nameof(MatchReadyToMoveJob));
-            q.AddJobAndTrigger<MatchReadyToMoveJob>(
-                readyJobKey,
-                moveTicketsJobSettings.MatchReadyToMoveJob.CronExpression);
-
+            ConfigureMatchReadyToMoveJob(quartzConfigurator, moveTicketsJobSettings.MatchReadyToMoveJob);
         });
 
         return services;
     }
 
-    private static void AddJobAndTrigger<T>(this IServiceCollectionQuartzConfigurator quartz, JobKey jobKey, string cronExpression) where T : IJob
+    private static void ConfigureMatchReadyToMoveJob(IServiceCollectionQuartzConfigurator quartzConfigurator, JobSchedule jobSchedule)
     {
-        quartz.AddJob<T>(opts => opts.WithIdentity(jobKey));
+        var jobKey = new JobKey(nameof(MatchReadyToMoveJob));
+        RegisterJobWithCronTrigger<MatchReadyToMoveJob>(quartzConfigurator, jobKey, jobSchedule.CronExpression);
+    }
 
-        quartz.AddTrigger(opts => opts
+    private static void RegisterJobWithCronTrigger<T>(IServiceCollectionQuartzConfigurator quartzConfigurator, JobKey jobKey, string cronExpression) where T : IJob
+    {
+        quartzConfigurator.AddJob<T>(jobOptions => jobOptions.WithIdentity(jobKey));
+
+        quartzConfigurator.AddTrigger(triggerOptions => triggerOptions
             .ForJob(jobKey)
-            .WithIdentity(jobKey.Name + "Trigger")
+            .WithIdentity($"{jobKey.Name}Trigger")
             .WithCronSchedule(cronExpression));
     }
 }

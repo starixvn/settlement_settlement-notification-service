@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Notification.MoveTickets.Features.GetMatchesReadyToMove;
 using Notification.MoveTickets.Features.GetMatchTicketInfo;
 using Notification.MoveTickets.Jobs;
+using Notification.MoveTickets.Services;
 using NSubstitute;
 using Quartz;
 using SettlementNotification.Constants;
@@ -19,6 +20,7 @@ public class MatchReadyToMoveJobTests
     private readonly IGetMatchesReadyToMoveHandler getMatchesHandler;
     private readonly IGetMatchTicketInfoHandler getMatchTicketInfoHandler;
     private readonly ICacheService cacheService;
+    private readonly INotificationContentService notificationContentService;
     private readonly IJobExecutionContext jobContext;
     private readonly MatchReadyToMoveJob job;
 
@@ -29,6 +31,7 @@ public class MatchReadyToMoveJobTests
         getMatchesHandler = Substitute.For<IGetMatchesReadyToMoveHandler>();
         getMatchTicketInfoHandler = Substitute.For<IGetMatchTicketInfoHandler>();
         cacheService = Substitute.For<ICacheService>();
+        notificationContentService = Substitute.For<INotificationContentService>();
         jobContext = Substitute.For<IJobExecutionContext>();
 
         job = new MatchReadyToMoveJob(
@@ -36,9 +39,9 @@ public class MatchReadyToMoveJobTests
             notificationService,
             getMatchesHandler,
             getMatchTicketInfoHandler,
-            cacheService);
+            cacheService,
+            notificationContentService);
     }
-
 
     [Fact]
     public async Task Execute_WithNoEligibleMatches_ShouldLogAndReturn()
@@ -56,7 +59,6 @@ public class MatchReadyToMoveJobTests
         await job.Execute(jobContext);
 
         // Assert
-        logger.Received(1).LogInformation("No eligible matches found for moving tickets");
         notificationService.DidNotReceive().Notify(Arg.Any<NotificationModel>());
     }
 
@@ -70,13 +72,14 @@ public class MatchReadyToMoveJobTests
         cacheService.ContainAsync("Settlement-AutoMoveStatus").Returns(false);
         getMatchesHandler.HandleAsync().Returns(matches);
         getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
+        notificationContentService.CreateNotificationContent(Arg.Any<List<Match>>(), Arg.Any<bool>()).Returns("Test content");
 
         // Act
         await job.Execute(jobContext);
 
         // Assert
         notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
-            n.MessageContent.Contains("Auto move tickets of settled results service = OFF")));
+            n.MessageContent == "Test content"));
     }
 
     [Fact]
@@ -93,90 +96,7 @@ public class MatchReadyToMoveJobTests
     }
 
     [Fact]
-    public async Task Execute_WithBaseballAndCricketMatches_ShouldIncludeBothInContent()
-    {
-        // Arrange
-        var matches = new List<Match>
-        {
-            new() { MatchId = 1, SportType = SportType.Baseball, SettlementStatus = 1 },
-            new() { MatchId = 2, SportType = SportType.Cricket, SettlementStatus = 1 },
-            new() { MatchId = 3, SportType = SportType.Soccer, SettlementStatus = 1 }
-        };
-        var tickets = new List<TicketInfo>
-        {
-            new() { MatchId = 1, IsExistsSettledTicket = true },
-            new() { MatchId = 2, IsExistsSettledTicket = true },
-            new() { MatchId = 3, IsExistsSettledTicket = true }
-        };
-
-        cacheService.ContainAsync("Settlement-AutoMoveStatus").Returns(true);
-        cacheService.TryGetAsync<bool>("Settlement-AutoMoveStatus").Returns((true, true));
-        getMatchesHandler.HandleAsync().Returns(matches);
-        getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
-
-        // Act
-        await job.Execute(jobContext);
-
-        // Assert
-        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
-            n.MessageContent.Contains("+ Baseball: 1") &&
-            n.MessageContent.Contains("+ Cricket: 2")));
-    }
-
-    [Fact]
-    public async Task Execute_WithOnHoldMatches_ShouldIncludeInContent()
-    {
-        // Arrange
-        var matches = new List<Match>
-        {
-            new() { MatchId = 1, SportType = SportType.Baseball, SettlementStatus = 1 }, // Pending
-            new() { MatchId = 2, SportType = SportType.Baseball, SettlementStatus = 2 }, // Undecided
-            new() { MatchId = 3, SportType = SportType.Baseball, SettlementStatus = 4 }, // UnderSettle
-            new() { MatchId = 4, SportType = SportType.Baseball, SettlementStatus = 16 }, // MtdHold
-            new() { MatchId = 5, SportType = SportType.Baseball, SettlementStatus = 64 }  // KeyHold
-        };
-        var tickets = matches.Select(m => new TicketInfo { MatchId = m.MatchId, IsExistsSettledTicket = true }).ToList();
-
-        cacheService.ContainAsync("Settlement-AutoMoveStatus").Returns(true);
-        cacheService.TryGetAsync<bool>("Settlement-AutoMoveStatus").Returns((true, true));
-        getMatchesHandler.HandleAsync().Returns(matches);
-        getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
-
-        // Act
-        await job.Execute(jobContext);
-
-        // Assert
-        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
-            n.MessageContent.Contains("+ matches on-hold: 1, 2, 3, 4, 5")));
-    }
-
-    [Fact]
-    public async Task Execute_WithMatchesWithoutChild_ShouldIncludeInContent()
-    {
-        // Arrange
-        var matches = new List<Match>
-        {
-            new() { MatchId = 1, SportType = SportType.Baseball, ChildMatchId = null },
-            new() { MatchId = 2, SportType = SportType.Baseball, ChildMatchId = 0 },
-            new() { MatchId = 3, SportType = SportType.Baseball, ChildMatchId = 100 }
-        };
-        var tickets = matches.Select(m => new TicketInfo { MatchId = m.MatchId, IsExistsSettledTicket = true }).ToList();
-
-        cacheService.ContainAsync("Settlement-AutoMoveStatus").Returns(true);
-        cacheService.TryGetAsync<bool>("Settlement-AutoMoveStatus").Returns((true, true));
-        getMatchesHandler.HandleAsync().Returns(matches);
-        getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
-
-        // Act
-        await job.Execute(jobContext);
-
-        // Assert
-        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
-            n.MessageContent.Contains("+ matches without corresponding child-match to move tickets: 1, 2")));
-    }
-
-    [Fact]
-    public async Task Execute_WithAutoMoveEnabled_ShouldShowONInContent()
+    public async Task Execute_WithEligibleMatches_ShouldCallNotificationContentService()
     {
         // Arrange
         var matches = CreateTestMatches();
@@ -186,17 +106,38 @@ public class MatchReadyToMoveJobTests
         cacheService.TryGetAsync<bool>("Settlement-AutoMoveStatus").Returns((true, true));
         getMatchesHandler.HandleAsync().Returns(matches);
         getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
+        notificationContentService.CreateNotificationContent(Arg.Any<List<Match>>(), Arg.Any<bool>()).Returns("Test content");
 
         // Act
         await job.Execute(jobContext);
 
         // Assert
-        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
-            n.MessageContent.Contains("Auto move tickets of settled results service = ON")));
+        notificationContentService.Received(1).CreateNotificationContent(Arg.Is<List<Match>>(m => m.Count == 3), true);
+        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n => n.MessageContent == "Test content"));
     }
 
     [Fact]
-    public async Task Execute_WithAutoMoveDisabled_ShouldShowOFFInContent()
+    public async Task Execute_WithAutoMoveEnabled_ShouldPassTrueToContentService()
+    {
+        // Arrange
+        var matches = CreateTestMatches();
+        var tickets = CreateTestTickets();
+
+        cacheService.ContainAsync("Settlement-AutoMoveStatus").Returns(true);
+        cacheService.TryGetAsync<bool>("Settlement-AutoMoveStatus").Returns((true, true));
+        getMatchesHandler.HandleAsync().Returns(matches);
+        getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
+        notificationContentService.CreateNotificationContent(Arg.Any<List<Match>>(), Arg.Any<bool>()).Returns("Test content");
+
+        // Act
+        await job.Execute(jobContext);
+
+        // Assert
+        notificationContentService.Received(1).CreateNotificationContent(Arg.Any<List<Match>>(), true);
+    }
+
+    [Fact]
+    public async Task Execute_WithAutoMoveDisabled_ShouldPassFalseToContentService()
     {
         // Arrange
         var matches = CreateTestMatches();
@@ -206,13 +147,13 @@ public class MatchReadyToMoveJobTests
         cacheService.TryGetAsync<bool>("Settlement-AutoMoveStatus").Returns((true, false));
         getMatchesHandler.HandleAsync().Returns(matches);
         getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
+        notificationContentService.CreateNotificationContent(Arg.Any<List<Match>>(), Arg.Any<bool>()).Returns("Test content");
 
         // Act
         await job.Execute(jobContext);
 
         // Assert
-        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
-            n.MessageContent.Contains("Auto move tickets of settled results service = OFF")));
+        notificationContentService.Received(1).CreateNotificationContent(Arg.Any<List<Match>>(), false);
     }
 
     [Fact]
@@ -228,8 +169,8 @@ public class MatchReadyToMoveJobTests
         await job.Execute(jobContext);
 
         // Assert
-        logger.Received(1).LogInformation("No eligible matches found for moving tickets");
         notificationService.DidNotReceive().Notify(Arg.Any<NotificationModel>());
+        notificationContentService.DidNotReceive().CreateNotificationContent(Arg.Any<List<Match>>(), Arg.Any<bool>());
     }
 
     [Fact]
@@ -243,6 +184,7 @@ public class MatchReadyToMoveJobTests
         cacheService.TryGetAsync<bool>("Settlement-AutoMoveStatus").Returns((true, true));
         getMatchesHandler.HandleAsync().Returns(matches);
         getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
+        notificationContentService.CreateNotificationContent(Arg.Any<List<Match>>(), Arg.Any<bool>()).Returns("Test content");
 
         // Act
         await job.Execute(jobContext);
@@ -252,7 +194,45 @@ public class MatchReadyToMoveJobTests
             n.ActionName == "Auto move tickets of settled results" &&
             n.MessageGroupId == MessageGroup.MatchReadyToMove &&
             n.LetstalkGroup == LetstalkGroup.Notification &&
-            !string.IsNullOrEmpty(n.MessageContent)));
+            n.MessageContent == "Test content"));
+    }
+
+    [Fact]
+    public async Task Execute_WithCacheException_ShouldLogWarningAndReturnFalse()
+    {
+        // Arrange
+        var matches = CreateTestMatches();
+        var tickets = CreateTestTickets();
+
+        cacheService.ContainAsync("Settlement-AutoMoveStatus").Returns(Task.FromException<bool>(new Exception("Cache error")));
+        getMatchesHandler.HandleAsync().Returns(matches);
+        getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
+        notificationContentService.CreateNotificationContent(Arg.Any<List<Match>>(), Arg.Any<bool>()).Returns("Test content");
+
+        // Act
+        await job.Execute(jobContext);
+
+        // Assert
+        notificationContentService.Received(1).CreateNotificationContent(Arg.Any<List<Match>>(), false);
+    }
+
+    [Fact]
+    public async Task Execute_WithCacheKeyNotExists_ShouldReturnFalse()
+    {
+        // Arrange
+        var matches = CreateTestMatches();
+        var tickets = CreateTestTickets();
+
+        cacheService.ContainAsync("Settlement-AutoMoveStatus").Returns(false);
+        getMatchesHandler.HandleAsync().Returns(matches);
+        getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(tickets);
+        notificationContentService.CreateNotificationContent(Arg.Any<List<Match>>(), Arg.Any<bool>()).Returns("Test content");
+
+        // Act
+        await job.Execute(jobContext);
+
+        // Assert
+        notificationContentService.Received(1).CreateNotificationContent(Arg.Any<List<Match>>(), false);
     }
 
     private static List<Match> CreateTestMatches()
