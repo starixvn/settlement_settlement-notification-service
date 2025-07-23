@@ -4,7 +4,6 @@ using Notification.MoveTickets.Features.GetMatchesReadyToMove;
 using Notification.MoveTickets.Features.GetMatchTicketInfo;
 using Quartz;
 using SettlementNotification.Constants;
-using SettlementNotification.Criteria;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
 
@@ -50,25 +49,12 @@ public class MatchReadyToMoveJob(
     {
         var content = CreateContent(matches, isAutoMoveEnabled);
 
-        var criteria = new AddNotificationCriteria
-        {
-            ActionName = "Auto move tickets of settled results",
-            MessageGroupId = MessageGroup.MatchReadyToMove,
-            StatusId = 255,
-            MessageContent = content
-        };
-
-        //await repository.ExecuteAsync(criteria);
-
-
         var notificationModel = new NotificationModel
         {
-            ActionName = criteria.ActionName,
+            ActionName = "Auto move tickets of settled results",
             MessageContent = content,
-            MessageId = criteria.MessageId,
-            MessageType = criteria.MessageType,
-            MessageGroupId = criteria.MessageGroupId,
-            //IsTest = matchDetail.IsTest,
+            MessageType = "Reminder",
+            MessageGroupId = MessageGroup.MatchReadyToMove,
             LetstalkGroup = LetstalkGroup.Notification
         };
 
