@@ -14,7 +14,7 @@ public class GetMatchTicketInfoHandler(
 {
     public async Task<List<TicketInfo>> HandleAsync(List<int> matchIds)
     {
-        var criteria = new GetMatchTicketInfoCriteria()
+        var criteria = new GetMatchTicketInfoCriteria
         {
             ListMatchIds = string.Join(",", matchIds)
         };

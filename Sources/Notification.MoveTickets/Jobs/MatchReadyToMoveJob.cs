@@ -69,8 +69,13 @@ public class MatchReadyToMoveJob(
         return [.. matches.Where(m => tickets.Exists(t => t.MatchId == m.MatchId && t.IsExistsSettledTicket))];
     }
 
-    private static List<Match> GetOnHoldMatches(List<Match> eligibleMatches)
-        => [.. eligibleMatches.Where(m => m.Remark.IsPending || m.Remark.IsUndecided || m.Remark.IsUnderSettle || m.Remark.IsMtdHold || m.Remark.IsKeyHold)];
+    private static List<Match> GetOnHoldMatches(List<Match> eligibleMatches) => [.. eligibleMatches.Where(m =>
+    {
+        var isPendingOrUndecided = m.Remark.IsPending || m.Remark.IsUndecided;
+        var isUnderSettleOrMtdHold = m.Remark.IsUnderSettle || m.Remark.IsMtdHold;
+
+        return isPendingOrUndecided || isUnderSettleOrMtdHold || m.Remark.IsKeyHold;
+    })];
 
     private static List<Match> GetMatchesWithoutChildMatches(List<Match> eligibleMatches)
         => [.. eligibleMatches.Where(m => m.ChildMatchId == null || m.ChildMatchId == 0)];
