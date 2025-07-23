@@ -7,14 +7,14 @@
 
   <ItemGroup>
     <PackageReference Include="Fanex.Caching" Version="2.2.8" />
-    <PackageReference Include="Fanex.Data" Version="4.3.4.3" />
-    <PackageReference Include="Fanex.Data.SqlServer" Version="4.3.4.3" />
+    <PackageReference Include="Fanex.Data" Version="4.3.4.4" />
+    <PackageReference Include="Fanex.Data.SqlServer" Version="4.3.4.4" />
     <PackageReference Include="Fanex.LetstalkService.Client" Version="2.0.0" />
     <PackageReference Include="Fanex.Logging" Version="2.0.2" />
-    <PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.1.0" />
     <PackageReference Include="Fanex.Logging.Extensions.Database" Version="2.0.2.1" />
     <PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="2.0.2" />
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.5.1" />
+    <PackageReference Include="Fanex.SiteDbConnectionManager.Client" Version="1.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.7" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.7" />

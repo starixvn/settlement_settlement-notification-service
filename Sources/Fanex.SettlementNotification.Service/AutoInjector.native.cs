@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SettlementNotification.Services;
 using StackExchange.Redis;
-using System;
 
 namespace Fanex.SettlementNotification.Service;
 
@@ -19,6 +18,7 @@ public static class AutoInjector
         services.AddTransient<ILogger, Logger>();
         services.AddTransient<RefDataService, RefDataServiceImp>();
         services.AddTransient<IRemotingRefService, RemotingRefService>();
+        services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<AutoNotificationController, AutoNotificationControllerImp>();
         services.AddSingleton<IDynamicRepository, DynamicRepository>();
         services.AddSingleton<ContentService, ContentServiceImp>();
@@ -48,6 +48,5 @@ public static class AutoInjector
             ConnectionString = redisConfig,
             ApplicationName = applicationName,
         }));
-        services.AddSingleton<ICacheService>(new CacheService());
     }
 }
