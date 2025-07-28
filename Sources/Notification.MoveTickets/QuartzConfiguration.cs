@@ -15,6 +15,13 @@ public static class QuartzConfiguration
         services.AddQuartz(quartzConfigurator =>
         {
             ConfigureMatchReadyToMoveJob(quartzConfigurator, moveTicketsJobSettings.MatchReadyToMoveJob);
+
+            // Job MoveTicketsJob
+            var moveJobKey = new JobKey(nameof(MoveTicketsJob));
+            q.AddJobAndTrigger<MoveTicketsJob>(
+                moveJobKey,
+                moveTicketsJobSettings.MoveTicketsJob.CronExpression);
+
         });
 
         return services;

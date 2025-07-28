@@ -12,6 +12,9 @@ public static class MoveTicketsExtensions
     {
         services
             .AddQuartzServices(configuration)
+            .AddScoped<MatchReadyToMoveJob>()
+            .AddScoped<MoveTicketsJob>()
+            .AddScoped<MatchService, MatchServiceImp>()
             .AddScoped<IGetMatchesReadyToMoveHandler, GetMatchesReadyToMoveHandler>()
             .AddScoped<IGetMatchTicketInfoHandler, GetMatchTicketInfoHandler>()
             .AddScoped<INotificationContentService, NotificationContentService>();
