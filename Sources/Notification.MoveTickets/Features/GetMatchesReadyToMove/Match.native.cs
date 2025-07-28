@@ -50,7 +50,7 @@ public class RemarkSettingModel
     private static string ConvertSettlementStatusToBinaryString(byte settlementStatus)
     {
         var binaryString = Convert.ToString(settlementStatus, BinaryBase);
-        return new string(binaryString.Reverse().ToArray());
+        return new string([.. binaryString.Reverse()]);
     }
 
     private bool IsBitSet(int bitPosition)

@@ -95,7 +95,7 @@ public class MatchReadyToMoveJob(
             var (success, value) = await cacheService.TryGetAsync<bool>(MoveTicketsMessages.CacheKeys.AutoMoveStatus);
             return success && value;
         }
-        catch (Exception ex)
+        catch
         {
             return false;
         }

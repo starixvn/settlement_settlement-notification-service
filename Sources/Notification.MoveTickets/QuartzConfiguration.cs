@@ -11,17 +11,12 @@ public static class QuartzConfiguration
     public static IServiceCollection AddQuartzServices(this IServiceCollection services, IConfiguration configuration)
     {
         var moveTicketsJobSettings = configuration.GetSection("MoveTicketsJobs").Get<MoveTicketsJobSettings>() ?? new();
-        
+
         services.AddQuartz(quartzConfigurator =>
         {
             ConfigureMatchReadyToMoveJob(quartzConfigurator, moveTicketsJobSettings.MatchReadyToMoveJob);
 
-            // Job MoveTicketsJob
-            var moveJobKey = new JobKey(nameof(MoveTicketsJob));
-            q.AddJobAndTrigger<MoveTicketsJob>(
-                moveJobKey,
-                moveTicketsJobSettings.MoveTicketsJob.CronExpression);
-
+            ConfigureMoveTicketsJob(quartzConfigurator, moveTicketsJobSettings.MoveTicketsJob);
         });
 
         return services;
@@ -31,6 +26,12 @@ public static class QuartzConfiguration
     {
         var jobKey = new JobKey(nameof(MatchReadyToMoveJob));
         RegisterJobWithCronTrigger<MatchReadyToMoveJob>(quartzConfigurator, jobKey, jobSchedule.CronExpression);
+    }
+
+    private static void ConfigureMoveTicketsJob(IServiceCollectionQuartzConfigurator quartzConfigurator, JobSchedule jobSchedule)
+    {
+        var jobKey = new JobKey(nameof(MoveTicketsJob));
+        RegisterJobWithCronTrigger<MoveTicketsJob>(quartzConfigurator, jobKey, jobSchedule.CronExpression);
     }
 
     private static void RegisterJobWithCronTrigger<T>(IServiceCollectionQuartzConfigurator quartzConfigurator, JobKey jobKey, string cronExpression) where T : IJob
