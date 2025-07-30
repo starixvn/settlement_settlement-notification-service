@@ -1,4 +1,5 @@
 ﻿using Fanex.Data.Repository;
+using Notification.MoveTickets.Models;
 
 namespace Notification.MoveTickets.Features.GetMatchesReadyToMove;
 

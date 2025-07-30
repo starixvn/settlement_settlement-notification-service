@@ -1,4 +1,4 @@
-using Notification.MoveTickets.Features.GetMatchesReadyToMove;
+using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using SettlementNotification.Constants;
 using Xunit;

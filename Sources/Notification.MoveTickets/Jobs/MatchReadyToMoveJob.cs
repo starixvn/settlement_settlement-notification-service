@@ -1,8 +1,6 @@
-﻿using Fanex.Caching;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Notification.MoveTickets.Constants;
-using Notification.MoveTickets.Features.GetMatchesReadyToMove;
-using Notification.MoveTickets.Features.GetMatchTicketInfo;
+using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
 using SettlementNotification.Constants;
@@ -15,9 +13,8 @@ namespace Notification.MoveTickets.Jobs;
 public class MatchReadyToMoveJob(
     ILogger<MatchReadyToMoveJob> logger,
     NotificationService notificationService,
-    IGetMatchesReadyToMoveHandler getMatchesHandler,
-    IGetMatchTicketInfoHandler getMatchTicketInfoHandler,
-    ICacheService cacheService,
+    IMatchesReadyToMoveService matchesReadyToMoveService,
+    IAutoMoveStatusService autoMoveStatusService,
     INotificationContentService notificationContentService) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
@@ -35,18 +32,18 @@ public class MatchReadyToMoveJob(
 
     private async Task ProcessMatchReadyToMove()
     {
-        var isAutoMoveEnabled = await GetAutoMoveStatus();
-        var eligibleMatches = await GetEligibleMatches();
+        var isAutoMoveEnabled = await autoMoveStatusService.GetAutoMoveStatus();
+        var eligibleMatches = await matchesReadyToMoveService.GetEligibleMatches();
 
         if (eligibleMatches.Count == 0)
         {
             return;
         }
 
-        await SendNotificationForEligibleMatches(eligibleMatches, isAutoMoveEnabled);
+        SendNotificationForEligibleMatches(eligibleMatches, isAutoMoveEnabled);
     }
 
-    private async Task SendNotificationForEligibleMatches(List<Match> matches, bool isAutoMoveEnabled)
+    private void SendNotificationForEligibleMatches(List<Match> matches, bool isAutoMoveEnabled)
     {
         var notificationContent = notificationContentService.CreateNotificationContent(matches, isAutoMoveEnabled);
         var notificationModel = CreateNotificationModel(notificationContent);
@@ -64,40 +61,5 @@ public class MatchReadyToMoveJob(
             MessageGroupId = MessageGroup.MatchReadyToMove,
             LetstalkGroup = LetstalkGroup.Notification
         };
-    }
-
-    private async Task<List<Match>> GetEligibleMatches()
-    {
-        var allMatches = await getMatchesHandler.HandleAsync();
-        var matchIds = allMatches.Select(m => m.MatchId).ToList();
-        var ticketInfos = await getMatchTicketInfoHandler.HandleAsync(matchIds);
-
-        return allMatches
-            .Where(match => HasSettledTickets(match.MatchId, ticketInfos))
-            .ToList();
-    }
-
-    private static bool HasSettledTickets(int matchId, List<TicketInfo> ticketInfos)
-    {
-        return ticketInfos.Exists(ticket => ticket.MatchId == matchId && ticket.IsExistsSettledTicket);
-    }
-
-    private async Task<bool> GetAutoMoveStatus()
-    {
-        try
-        {
-            var keyExists = await cacheService.ContainAsync(MoveTicketsMessages.CacheKeys.AutoMoveStatus);
-            if (!keyExists)
-            {
-                return false;
-            }
-
-            var (success, value) = await cacheService.TryGetAsync<bool>(MoveTicketsMessages.CacheKeys.AutoMoveStatus);
-            return success && value;
-        }
-        catch
-        {
-            return false;
-        }
     }
 }

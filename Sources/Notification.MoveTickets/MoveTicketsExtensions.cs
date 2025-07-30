@@ -2,6 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Notification.MoveTickets.Features.GetMatchesReadyToMove;
 using Notification.MoveTickets.Features.GetMatchTicketInfo;
+using Notification.MoveTickets.Features.GetMoveTicketInfo;
+using Notification.MoveTickets.Features.MoveTicket;
+using Notification.MoveTickets.Features.VerifyBeforeMoveTickets;
 using Notification.MoveTickets.Services;
 
 namespace Notification.MoveTickets;
@@ -14,7 +17,13 @@ public static class MoveTicketsExtensions
             .AddQuartzServices(configuration)
             .AddScoped<IGetMatchesReadyToMoveHandler, GetMatchesReadyToMoveHandler>()
             .AddScoped<IGetMatchTicketInfoHandler, GetMatchTicketInfoHandler>()
-            .AddScoped<INotificationContentService, NotificationContentService>();
+            .AddScoped<IGetMatchtInfoHandler, GetMatchtInfoHandler>()
+            .AddScoped<IVerifyBeforeMoveTicketsHandler, VerifyBeforeMoveTicketsHandler>()
+            .AddScoped<IMoveTicketHandler, MoveTicketHandler>()
+            .AddScoped<INotificationContentService, NotificationContentService>()
+            .AddScoped<IAutoMoveStatusService, AutoMoveStatusService>()
+            .AddScoped<IMatchesReadyToMoveService, MatchesReadyToMoveService>()
+            .AddScoped<IMoveTicketService, MoveTicketService>();
 
         return services;
     }

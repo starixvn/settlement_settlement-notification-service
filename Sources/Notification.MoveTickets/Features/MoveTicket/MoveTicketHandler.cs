@@ -1,28 +1,26 @@
 ﻿using Fanex.Data.Repository;
 using Fanex.SiteDbConnectionManager.Client.Services;
-using Microsoft.Extensions.Options;
 using Notification.MoveTickets.Features.GetMoveTicketInfo;
-using SettlementNotification.Models;
+using Notification.MoveTickets.Models;
 
 namespace Notification.MoveTickets.Features.MoveTicket;
 
-public class MoveTicketHandler
+public interface IMoveTicketHandler
 {
-    private readonly AppSettingsKey appSettingsKey;
-    private readonly SiteDbClientService siteDbClientService;
-    private readonly IDynamicRepository repository;
+    Task HandleAsync(Match match, MatchMoveInfo moveTicketInfo);
+}
 
-    public MoveTicketHandler(IOptions<AppSettingsKey> options, SiteDbClientService siteDbClientService, IDynamicRepository repository)
+public class MoveTicketHandler(SiteDbClientService siteDbClientService, IDynamicRepository repository) : IMoveTicketHandler
+{
+    public async Task HandleAsync(Match match, MatchMoveInfo moveTicketInfo)
     {
-        this.appSettingsKey = options.Value;
-        this.siteDbClientService = siteDbClientService;
-        this.repository = repository;
-    }
-
-    public async Task HandleAsync(MoveTicketCriteria criteria)
-    {
-        // get tickets that are ready to move
-        var getTickets = new MoveTicketInfo();
+        var criteria = new MoveTicketCriteria
+        {
+            MatchId = match.MatchId,
+            EventDate = moveTicketInfo.EventDate,
+            ChildMatchId = moveTicketInfo.ChildMatchId,
+            Resources = moveTicketInfo.Resources
+        };
 
         var sitesDb = await siteDbClientService.GetActiveSiteDbAsync();
         var tasks = sitesDb.Select(s => MoveTicket(s.SiteName, criteria))
@@ -30,7 +28,7 @@ public class MoveTicketHandler
 
         var result = await Task.WhenAll(tasks);
 
-        await UpdateChildMatchInfo(getTickets.ChildMatchId);
+        await UpdateChildMatchInfo(moveTicketInfo.ChildMatchId);
 
 
     }

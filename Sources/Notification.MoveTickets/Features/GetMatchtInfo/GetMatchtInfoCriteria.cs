@@ -1,7 +1,7 @@
 ﻿using Fanex.Data.Repository;
 
 namespace Notification.MoveTickets.Features.GetMoveTicketInfo;
-public class GetMoveTicketInfoCriteria : CriteriaBase
+public class GetMatchtInfoCriteria : CriteriaBase
 {
     public int MatchId { get; set; }
 

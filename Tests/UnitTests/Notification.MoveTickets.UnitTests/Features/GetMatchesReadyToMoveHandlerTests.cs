@@ -1,5 +1,6 @@
 ﻿using Fanex.Data.Repository;
 using Notification.MoveTickets.Features.GetMatchesReadyToMove;
+using Notification.MoveTickets.Models;
 using NSubstitute;
 using Xunit;
 

@@ -1,5 +1,5 @@
 ﻿namespace Notification.MoveTickets.Features.GetMoveTicketInfo;
-public class MoveTicketInfo
+public class MatchMoveInfo
 {
     public DateTime EventDate { get; set; }
 

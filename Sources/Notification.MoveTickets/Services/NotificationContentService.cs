@@ -1,5 +1,5 @@
 using Notification.MoveTickets.Constants;
-using Notification.MoveTickets.Features.GetMatchesReadyToMove;
+using Notification.MoveTickets.Models;
 using SettlementNotification.Constants;
 using System.Text;
 

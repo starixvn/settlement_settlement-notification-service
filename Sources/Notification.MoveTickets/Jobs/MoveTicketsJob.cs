@@ -1,16 +1,26 @@
-﻿using Quartz;
+﻿using Notification.MoveTickets.Services;
+using Quartz;
 
 namespace Notification.MoveTickets.Jobs;
 
 [DisallowConcurrentExecution]
-public class MoveTicketsJob : IJob
+public class MoveTicketsJob(
+    IAutoMoveStatusService autoMoveStatusService,
+    IMatchesReadyToMoveService matchesReadyToMoveService,
+    IMoveTicketService moveTicketService) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        // get match
-        // verify if match is ready to move
-        // get tickets that are ready to move
-        // move tickets
-        // update child match info
+        if (!await autoMoveStatusService.GetAutoMoveStatus())
+        {
+            return;
+        }
+
+        var matches = await matchesReadyToMoveService.GetEligibleMatches();
+
+        foreach (var item in matches)
+        {
+            await moveTicketService.ProcessMoveTicket(item);
+        }
     }
 }

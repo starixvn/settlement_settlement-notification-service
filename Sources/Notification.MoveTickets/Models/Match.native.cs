@@ -1,4 +1,4 @@
-﻿namespace Notification.MoveTickets.Features.GetMatchesReadyToMove;
+﻿namespace Notification.MoveTickets.Models;
 
 public class Match
 {
