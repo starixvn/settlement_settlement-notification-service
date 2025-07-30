@@ -26,7 +26,7 @@ public class MoveTicketHandler(SiteDbClientService siteDbClientService, IDynamic
         var tasks = sitesDb.Select(s => MoveTicket(s.SiteName, criteria))
                 .ToArray();
 
-        var result = await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks);
 
         await UpdateChildMatchInfo(moveTicketInfo.ChildMatchId);
 

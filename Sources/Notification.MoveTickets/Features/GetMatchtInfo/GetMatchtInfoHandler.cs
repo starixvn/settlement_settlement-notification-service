@@ -12,7 +12,7 @@ public class GetMatchtInfoHandler(IDynamicRepository repository) : IGetMatchtInf
     public async Task<MatchMoveInfo> HandleAsync(int matchId)
     {
 
-        GetMatchtInfoCriteria criteria = new GetMatchtInfoCriteria
+        var criteria = new GetMatchtInfoCriteria
         {
             MatchId = matchId
         };
