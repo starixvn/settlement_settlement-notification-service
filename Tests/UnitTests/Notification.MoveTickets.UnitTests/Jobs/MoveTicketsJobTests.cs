@@ -1,8 +1,11 @@
-﻿using Notification.MoveTickets.Jobs;
+﻿using Notification.MoveTickets.Constants;
+using Notification.MoveTickets.Jobs;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using NSubstitute;
 using Quartz;
+using SettlementNotification.Constants;
+using SettlementNotification.Models;
 using SettlementNotification.Services;
 using Xunit;
 
@@ -30,7 +33,7 @@ public class MoveTicketsJobTests
     }
 
     [Fact]
-    public async Task Execute_AutoMoveDisabled_DoesNotProcessMatches()
+    public async Task Execute_AutoMoveDisabled_SendsNotificationOffSetting()
     {
         // Arrange
         autoMoveStatusService.GetAutoMoveStatus().Returns(false);
@@ -39,6 +42,12 @@ public class MoveTicketsJobTests
         await job.Execute(jobContext);
 
         // Assert
+        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
+            n.ActionName == MoveTicketsMessages.ActionNames.AutoMoveTickets &&
+            n.MessageContent == MoveTicketsMessages.ContentTemplates.SettingStatusOffTemplate &&
+            n.MessageType == MoveTicketsMessages.MessageTypes.Reminder &&
+            n.MessageGroupId == MessageGroup.MatchReadyToMove
+        ));
         await matchesReadyToMoveService.DidNotReceive().GetEligibleMatches();
         await moveTicketService.DidNotReceiveWithAnyArgs().ProcessMoveTicket(default);
     }
@@ -50,6 +59,7 @@ public class MoveTicketsJobTests
         autoMoveStatusService.GetAutoMoveStatus().Returns(true);
         var matches = new List<Match> { new Match { MatchId = 1 }, new Match { MatchId = 2 } };
         matchesReadyToMoveService.GetEligibleMatches().Returns(matches);
+        moveTicketService.ProcessMoveTicket(Arg.Any<Match>()).Returns(true);
 
         // Act
         await job.Execute(jobContext);
@@ -57,10 +67,13 @@ public class MoveTicketsJobTests
         // Assert
         await moveTicketService.Received(1).ProcessMoveTicket(matches[0]);
         await moveTicketService.Received(1).ProcessMoveTicket(matches[1]);
+        notificationService.DidNotReceive().Notify(Arg.Is<NotificationModel>(n =>
+            n.MessageContent == MoveTicketsMessages.ContentTemplates.NoMatchMovie
+        ));
     }
 
     [Fact]
-    public async Task Execute_AutoMoveEnabled_NoEligibleMatches_DoesNotCallProcessMoveTicket()
+    public async Task Execute_AutoMoveEnabled_NoEligibleMatches_SendsNoMatchMoveNotification()
     {
         // Arrange
         autoMoveStatusService.GetAutoMoveStatus().Returns(true);
@@ -71,5 +84,34 @@ public class MoveTicketsJobTests
 
         // Assert
         await moveTicketService.DidNotReceiveWithAnyArgs().ProcessMoveTicket(default);
+        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
+            n.ActionName == MoveTicketsMessages.ActionNames.AutoMoveTickets &&
+            n.MessageContent == MoveTicketsMessages.ContentTemplates.NoMatchMovie &&
+            n.MessageType == MoveTicketsMessages.MessageTypes.Reminder &&
+            n.MessageGroupId == MessageGroup.MatchReadyToMove
+        ));
+    }
+
+    [Fact]
+    public async Task Execute_AutoMoveEnabled_AllMoveTicketFail_SendsNoMatchMoveNotification()
+    {
+        // Arrange
+        autoMoveStatusService.GetAutoMoveStatus().Returns(true);
+        var matches = new List<Match> { new Match { MatchId = 1 }, new Match { MatchId = 2 } };
+        matchesReadyToMoveService.GetEligibleMatches().Returns(matches);
+        moveTicketService.ProcessMoveTicket(Arg.Any<Match>()).Returns(false);
+
+        // Act
+        await job.Execute(jobContext);
+
+        // Assert
+        await moveTicketService.Received(1).ProcessMoveTicket(matches[0]);
+        await moveTicketService.Received(1).ProcessMoveTicket(matches[1]);
+        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
+            n.ActionName == MoveTicketsMessages.ActionNames.AutoMoveTickets &&
+            n.MessageContent == MoveTicketsMessages.ContentTemplates.NoMatchMovie &&
+            n.MessageType == MoveTicketsMessages.MessageTypes.Reminder &&
+            n.MessageGroupId == MessageGroup.MatchReadyToMove
+        ));
     }
 }

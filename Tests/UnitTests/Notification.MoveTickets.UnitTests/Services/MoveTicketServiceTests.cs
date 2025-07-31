@@ -1,4 +1,7 @@
-﻿using Notification.MoveTickets.Features.GetMoveTicketInfo;
+﻿using System;
+using System.Threading.Tasks;
+using Notification.MoveTickets.Constants;
+using Notification.MoveTickets.Features.GetMoveTicketInfo;
 using Notification.MoveTickets.Features.MoveTicket;
 using Notification.MoveTickets.Features.UpdateMatch;
 using Notification.MoveTickets.Features.VerifyBeforeMoveTickets;
@@ -30,53 +33,64 @@ public class MoveTicketServiceTests
     }
 
     [Fact]
-    public async Task ProcessMoveTicket_AllValid_CallsHandlersInOrder()
-    {
-        // Arrange
-        var match = new Match { MatchId = 123 };
-        var verifyResult = new Result { ErrCode = 0 };
-        var moveInfo = new MatchMoveInfo { ChildMatchId = 456 };
-        verifyHandler.HandleAsync(match.MatchId).Returns(verifyResult);
-        getInfoHandler.HandleAsync(match.MatchId).Returns(moveInfo);
-
-        // Act
-        await service.ProcessMoveTicket(match);
-
-        // Assert
-        await verifyHandler.Received(1).HandleAsync(match.MatchId);
-        await getInfoHandler.Received(1).HandleAsync(match.MatchId);
-        await moveHandler.Received(1).HandleAsync(match, moveInfo);
-    }
-
-    [Fact]
-    public async Task ProcessMoveTicket_VerifyFails_ThrowsInvalidOperationException()
+    public async Task ProcessMoveTicket_VerifyFails_LogsAndReturnsFalse()
     {
         // Arrange
         var match = new Match { MatchId = 123 };
         var verifyResult = new Result { ErrCode = 1, ErrMsg = "Not ready" };
         verifyHandler.HandleAsync(match.MatchId).Returns(verifyResult);
 
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ProcessMoveTicket(match));
-        Assert.Contains("Cannot move tickets for match 123", ex.Message);
+        // Act
+        var result = await service.ProcessMoveTicket(match);
+
+        // Assert
+        Assert.False(result);
+        await settleLogService.Received(1).WriteLog(match.MatchId, "Not ready", MoveTicketConts.ActionIdMoveTicketFailed);
         await getInfoHandler.DidNotReceiveWithAnyArgs().HandleAsync(default);
         await moveHandler.DidNotReceiveWithAnyArgs().HandleAsync(default, default);
+        await updateMatchHandler.DidNotReceiveWithAnyArgs().HandleAsync(default);
     }
 
     [Fact]
-    public async Task ProcessMoveTicket_CallsHandlersWithCorrectParameters()
+    public async Task ProcessMoveTicket_MoveTicketFails_ReturnsFalse()
+    {
+        // Arrange
+        var match = new Match { MatchId = 123 };
+        var verifyResult = new Result { ErrCode = 0 };
+        var moveInfo = new MatchMoveInfo { ChildMatchId = 456, Resources = "res", EventDate = DateTime.UtcNow };
+        verifyHandler.HandleAsync(match.MatchId).Returns(verifyResult);
+        getInfoHandler.HandleAsync(match.MatchId).Returns(moveInfo);
+        moveHandler.HandleAsync(match, moveInfo).Returns((false, 0));
+
+        // Act
+        var result = await service.ProcessMoveTicket(match);
+
+        // Assert
+        Assert.False(result);
+        await settleLogService.DidNotReceiveWithAnyArgs().WriteLog(match.MatchId, Arg.Any<string>(), MoveTicketConts.ActionIdMoveTicket);
+        await updateMatchHandler.DidNotReceiveWithAnyArgs().HandleAsync(default);
+    }
+
+    [Fact]
+    public async Task ProcessMoveTicket_MoveTicketSuccess_LogsAndUpdatesMatch_ReturnsFalse()
     {
         // Arrange
         var match = new Match { MatchId = 999 };
         var verifyResult = new Result { ErrCode = 0 };
-        var moveInfo = new MatchMoveInfo { ChildMatchId = 888 };
+        var moveInfo = new MatchMoveInfo { ChildMatchId = 888, Resources = "abc", EventDate = DateTime.UtcNow };
         verifyHandler.HandleAsync(match.MatchId).Returns(verifyResult);
         getInfoHandler.HandleAsync(match.MatchId).Returns(moveInfo);
+        moveHandler.HandleAsync(match, moveInfo).Returns((true, 5));
 
         // Act
-        await service.ProcessMoveTicket(match);
+        var result = await service.ProcessMoveTicket(match);
 
         // Assert
-        await moveHandler.Received(1).HandleAsync(Arg.Is<Match>(m => m.MatchId == 999), Arg.Is<MatchMoveInfo>(mi => mi.ChildMatchId == 888));
+        Assert.False(result);
+        await settleLogService.Received(1).WriteLog(
+            match.MatchId,
+            Arg.Is<string>(msg => msg.Contains("888") && msg.Contains("abc") && msg.Contains("TC:5")),
+            MoveTicketConts.ActionIdMoveTicket);
+        await updateMatchHandler.Received(1).HandleAsync(888);
     }
 }

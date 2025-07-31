@@ -18,11 +18,11 @@ public class MoveTicketsJob(
     {
         try
         {
-            //if (!await autoMoveStatusService.GetAutoMoveStatus())
-            //{
-            //    SendNotificationOffSetting();
-            //    return;
-            //}
+            if (!await autoMoveStatusService.GetAutoMoveStatus())
+            {
+                SendNotificationOffSetting();
+                return;
+            }
 
             var matchMoveSuccess = 0;
             var matches = await matchesReadyToMoveService.GetEligibleMatches();

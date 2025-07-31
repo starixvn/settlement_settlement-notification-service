@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Logging;
+using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Jobs;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using NSubstitute;
 using Quartz;
+using SettlementNotification.Constants;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
 using Xunit;
@@ -32,7 +34,7 @@ public class MatchReadyToMoveJobTests
     }
 
     [Fact]
-    public async Task Execute_WithNoEligibleMatches_DoesNotSendNotification()
+    public async Task Execute_WithNoEligibleMatches_SendsNoEligibleMatchNotification()
     {
         // Arrange
         autoMoveStatusService.GetAutoMoveStatus().Returns(true);
@@ -42,7 +44,13 @@ public class MatchReadyToMoveJobTests
         await job.Execute(jobContext);
 
         // Assert
-        notificationService.DidNotReceive().Notify(Arg.Any<NotificationModel>());
+        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
+            n.ActionName == MoveTicketsMessages.ActionNames.AutoMoveTickets &&
+            n.MessageContent == MoveTicketsMessages.ContentTemplates.NoMatchEligible &&
+            n.MessageType == MoveTicketsMessages.MessageTypes.Reminder &&
+            n.MessageGroupId == MessageGroup.MatchReadyToMove &&
+            n.LetstalkGroup == LetstalkGroup.Notification
+        ));
     }
 
     [Fact]
@@ -58,7 +66,13 @@ public class MatchReadyToMoveJobTests
         await job.Execute(jobContext);
 
         // Assert
-        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n => n.MessageContent == "content"));
+        notificationService.Received(1).Notify(Arg.Is<NotificationModel>(n =>
+            n.MessageContent == "content" &&
+            n.ActionName == MoveTicketsMessages.ActionNames.AutoMoveTickets &&
+            n.MessageType == MoveTicketsMessages.MessageTypes.Reminder &&
+            n.MessageGroupId == MessageGroup.MatchReadyToMove &&
+            n.LetstalkGroup == LetstalkGroup.Notification
+        ));
     }
 
     [Fact]
