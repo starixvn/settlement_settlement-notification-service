@@ -1,18 +1,23 @@
 ﻿using Fanex.Data.Repository;
 using Fanex.SiteDbConnectionManager.Client.Services;
+using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Features.GetMoveTicketInfo;
 using Notification.MoveTickets.Models;
+using SettlementNotification.Services;
 
 namespace Notification.MoveTickets.Features.MoveTicket;
 
 public interface IMoveTicketHandler
 {
-    Task HandleAsync(Match match, MatchMoveInfo moveTicketInfo);
+    Task<(bool, int)> HandleAsync(Match match, MatchMoveInfo moveTicketInfo);
 }
 
-public class MoveTicketHandler(SiteDbClientService siteDbClientService, IDynamicRepository repository) : IMoveTicketHandler
+public class MoveTicketHandler(
+    SiteDbClientService siteDbClientService,
+    IDynamicRepository repository,
+    ISettleLogService settleLogService) : IMoveTicketHandler
 {
-    public async Task HandleAsync(Match match, MatchMoveInfo moveTicketInfo)
+    public async Task<(bool, int)> HandleAsync(Match match, MatchMoveInfo moveTicketInfo)
     {
         var criteria = new MoveTicketCriteria
         {
@@ -26,11 +31,29 @@ public class MoveTicketHandler(SiteDbClientService siteDbClientService, IDynamic
         var tasks = sitesDb.Select(s => MoveTicket(s.SiteName, criteria))
                 .ToArray();
 
-        await Task.WhenAll(tasks);
+        var results = (await Task.WhenAll(tasks))
+            .ToList();
 
-        await UpdateChildMatchInfo(moveTicketInfo.ChildMatchId);
+        if (results.Exists(x => x.ErrCode > 0))
+        {
+            await settleLogService.WriteLog(
+                match.MatchId,
+                $"Move ticket failed: {string.Join(", ", results.Select(r => r.ErrMsg))}",
+                MoveTicketConts.ActionIdMoveTicketFailed);
 
+            return (false, 0);
+        }
 
+        if (!results.Exists(x => x.TicketCount > 0))
+        {
+            await settleLogService.WriteLog(
+                match.MatchId,
+                MoveTicketConts.NotExistValidTicketToMove,
+                MoveTicketConts.ActionIdMoveTicketFailed);
+            return (false, 0);
+        }
+
+        return (true, results.Sum(x => x.TicketCount));
     }
 
     private async Task<ResultMoveTicket> MoveTicket(string dbServer, MoveTicketCriteria criteria)
@@ -46,12 +69,4 @@ public class MoveTicketHandler(SiteDbClientService siteDbClientService, IDynamic
         };
     }
 
-    private async Task UpdateChildMatchInfo(int childMatchId)
-    {
-        var updateChildMatchCriteria = new UpdateChildMatchCriteria { MatchId = childMatchId };
-        await repository.ExecuteAsync(updateChildMatchCriteria);
-
-        var updateChildMatchRemarkCriteria = new UpdateChildMatchRemarkCriteria { MatchId = childMatchId };
-        await repository.ExecuteAsync(updateChildMatchRemarkCriteria);
-    }
 }

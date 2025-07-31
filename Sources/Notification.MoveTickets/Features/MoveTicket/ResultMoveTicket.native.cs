@@ -1,9 +1,8 @@
-﻿namespace Notification.MoveTickets.Features.MoveTicket;
+﻿using Notification.MoveTickets.Models;
 
-public class ResultMoveTicket
+namespace Notification.MoveTickets.Features.MoveTicket;
+
+public class ResultMoveTicket : Result
 {
-    public int ErrCode { get; set; }
-
-    public string ErrMsg { get; set; } = string.Empty;
     public int TicketCount { get; set; }
 }

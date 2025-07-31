@@ -37,6 +37,7 @@ public class MatchReadyToMoveJob(
 
         if (eligibleMatches.Count == 0)
         {
+            SendNotificationNoEligibleMatch();
             return;
         }
 
@@ -49,6 +50,21 @@ public class MatchReadyToMoveJob(
         var notificationModel = CreateNotificationModel(notificationContent);
 
         notificationService.Notify(notificationModel);
+    }
+
+    private void SendNotificationNoEligibleMatch()
+    {
+        var model = new NotificationModel
+        {
+            ActionName = MoveTicketsMessages.ActionNames.AutoMoveTickets,
+            MessageContent = MoveTicketsMessages.ContentTemplates.NoMatchEligible,
+            MessageType = MoveTicketsMessages.MessageTypes.Reminder,
+            MessageGroupId = MessageGroup.MatchReadyToMove,
+            LetstalkGroup = LetstalkGroup.Notification
+        };
+
+        notificationService.Notify(model);
+
     }
 
     private static NotificationModel CreateNotificationModel(string content)

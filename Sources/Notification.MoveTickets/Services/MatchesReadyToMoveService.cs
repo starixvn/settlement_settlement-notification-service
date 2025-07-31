@@ -23,7 +23,5 @@ public class MatchesReadyToMoveService(
     }
 
     private static bool HasSettledTickets(int matchId, List<TicketInfo> ticketInfos)
-    {
-        return ticketInfos.Exists(ticket => ticket.MatchId == matchId && ticket.IsExistsSettledTicket);
-    }
+        => ticketInfos.Exists(ticket => ticket.MatchId == matchId && ticket.IsExistsSettledTicket);
 }

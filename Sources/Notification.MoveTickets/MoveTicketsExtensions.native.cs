@@ -4,6 +4,7 @@ using Notification.MoveTickets.Features.GetMatchesReadyToMove;
 using Notification.MoveTickets.Features.GetMatchTicketInfo;
 using Notification.MoveTickets.Features.GetMoveTicketInfo;
 using Notification.MoveTickets.Features.MoveTicket;
+using Notification.MoveTickets.Features.UpdateMatch;
 using Notification.MoveTickets.Features.VerifyBeforeMoveTickets;
 using Notification.MoveTickets.Services;
 
@@ -20,6 +21,7 @@ public static class MoveTicketsExtensions
             .AddScoped<IGetMatchtInfoHandler, GetMatchtInfoHandler>()
             .AddScoped<IVerifyBeforeMoveTicketsHandler, VerifyBeforeMoveTicketsHandler>()
             .AddScoped<IMoveTicketHandler, MoveTicketHandler>()
+            .AddScoped<IUpdateMatchHandler, UpdateMatchHandler>()
             .AddScoped<INotificationContentService, NotificationContentService>()
             .AddScoped<IAutoMoveStatusService, AutoMoveStatusService>()
             .AddScoped<IMatchesReadyToMoveService, MatchesReadyToMoveService>()

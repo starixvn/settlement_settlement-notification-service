@@ -1,6 +1,6 @@
 ﻿using Fanex.Data.Repository;
 
-namespace Notification.MoveTickets.Features.MoveTicket;
+namespace Notification.MoveTickets.Features.UpdateMatch;
 public class UpdateChildMatchRemarkCriteria : NonQueryCommand
 {
     public int MatchId { get; set; }

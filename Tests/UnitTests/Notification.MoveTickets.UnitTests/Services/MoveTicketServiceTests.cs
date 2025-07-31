@@ -1,9 +1,11 @@
 ﻿using Notification.MoveTickets.Features.GetMoveTicketInfo;
 using Notification.MoveTickets.Features.MoveTicket;
+using Notification.MoveTickets.Features.UpdateMatch;
 using Notification.MoveTickets.Features.VerifyBeforeMoveTickets;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using NSubstitute;
+using SettlementNotification.Services;
 using Xunit;
 
 namespace Notification.MoveTickets.UnitTests.Services;
@@ -13,6 +15,8 @@ public class MoveTicketServiceTests
     private readonly IVerifyBeforeMoveTicketsHandler verifyHandler;
     private readonly IGetMatchtInfoHandler getInfoHandler;
     private readonly IMoveTicketHandler moveHandler;
+    private readonly IUpdateMatchHandler updateMatchHandler;
+    private readonly ISettleLogService settleLogService;
     private readonly MoveTicketService service;
 
     public MoveTicketServiceTests()
@@ -20,7 +24,9 @@ public class MoveTicketServiceTests
         verifyHandler = Substitute.For<IVerifyBeforeMoveTicketsHandler>();
         getInfoHandler = Substitute.For<IGetMatchtInfoHandler>();
         moveHandler = Substitute.For<IMoveTicketHandler>();
-        service = new MoveTicketService(verifyHandler, getInfoHandler, moveHandler);
+        settleLogService = Substitute.For<ISettleLogService>();
+        updateMatchHandler = Substitute.For<IUpdateMatchHandler>();
+        service = new MoveTicketService(verifyHandler, getInfoHandler, moveHandler, settleLogService, updateMatchHandler);
     }
 
     [Fact]

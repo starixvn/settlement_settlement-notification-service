@@ -3,8 +3,10 @@ using Fanex.SiteDbConnectionManager.Client.Models;
 using Fanex.SiteDbConnectionManager.Client.Services;
 using Notification.MoveTickets.Features.GetMoveTicketInfo;
 using Notification.MoveTickets.Features.MoveTicket;
+using Notification.MoveTickets.Features.UpdateMatch;
 using Notification.MoveTickets.Models;
 using NSubstitute;
+using SettlementNotification.Services;
 using Xunit;
 
 namespace Notification.MoveTickets.UnitTests.Features;
@@ -13,13 +15,15 @@ public class MoveTicketHandlerTests
 {
     private readonly SiteDbClientService siteDbClientService;
     private readonly IDynamicRepository repository;
+    private readonly ISettleLogService settleLogService;
     private readonly MoveTicketHandler handler;
 
     public MoveTicketHandlerTests()
     {
         siteDbClientService = Substitute.For<SiteDbClientService>();
         repository = Substitute.For<IDynamicRepository>();
-        handler = new MoveTicketHandler(siteDbClientService, repository);
+        settleLogService = Substitute.For<ISettleLogService>();
+        handler = new MoveTicketHandler(siteDbClientService, repository, settleLogService);
     }
 
     [Fact]

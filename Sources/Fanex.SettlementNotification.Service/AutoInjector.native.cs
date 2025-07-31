@@ -29,6 +29,7 @@ public static class AutoInjector
         services.AddSingleton<SendMessageService, SendMessageServiceImp>();
         services.AddSingleton<MatchService, MatchServiceImp>();
         services.AddSingleton<ConfirmRefundService, ConfirmRefundServiceImp>();
+        services.AddTransient<ISettleLogService, SettleLogService>();
 
         AppConfigService.Config.LetstalkServiceApi = configuration.GetSection("Letstalk:ServiceUri").Value;
         RefDataTypeContainer

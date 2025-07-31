@@ -3,6 +3,7 @@ using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using NSubstitute;
 using Quartz;
+using SettlementNotification.Services;
 using Xunit;
 
 namespace Notification.MoveTickets.UnitTests.Jobs;
@@ -12,6 +13,8 @@ public class MoveTicketsJobTests
     private readonly IAutoMoveStatusService autoMoveStatusService;
     private readonly IMatchesReadyToMoveService matchesReadyToMoveService;
     private readonly IMoveTicketService moveTicketService;
+    private readonly NotificationService notificationService;
+
     private readonly MoveTicketsJob job;
     private readonly IJobExecutionContext jobContext;
 
@@ -20,7 +23,9 @@ public class MoveTicketsJobTests
         autoMoveStatusService = Substitute.For<IAutoMoveStatusService>();
         matchesReadyToMoveService = Substitute.For<IMatchesReadyToMoveService>();
         moveTicketService = Substitute.For<IMoveTicketService>();
-        job = new MoveTicketsJob(autoMoveStatusService, matchesReadyToMoveService, moveTicketService);
+        notificationService = Substitute.For<NotificationService>();
+
+        job = new MoveTicketsJob(autoMoveStatusService, matchesReadyToMoveService, moveTicketService, notificationService);
         jobContext = Substitute.For<IJobExecutionContext>();
     }
 

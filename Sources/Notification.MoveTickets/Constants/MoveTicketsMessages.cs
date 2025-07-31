@@ -26,10 +26,13 @@ public static class MoveTicketsMessages
         public const string MatchesNeedResolveHeader = "Matches need resolve:";
         public const string SportMatchesTemplate = "+ {0}: {1}";
         public const string ResolveCategoryTemplate = "+ {0}: {1}";
+        public const string SettingStatusOffTemplate = "Auto move tickets has not been executed due to Auto Move Tickets Setting status is OFF.";
+        public const string NoMatchEligible = "System detect 0 match eligible to move tickets.";
+        public const string NoMatchMovie = "Auto move tickets has not been executed due to no match is quailfied to move.";
     }
 
     public static class CacheKeys
     {
         public const string AutoMoveStatus = "Settlement-AutoMoveStatus";
     }
-} 
+}
