@@ -29,7 +29,7 @@ public class MatchReadyToMoveJobTests
         matchesReadyToMoveService = Substitute.For<IMatchesReadyToMoveService>();
         autoMoveStatusService = Substitute.For<IAutoMoveStatusService>();
         notificationContentService = Substitute.For<INotificationContentService>();
-        job = new MatchReadyToMoveJob(logger, notificationService, matchesReadyToMoveService, autoMoveStatusService, notificationContentService);
+        job = new MatchReadyToMoveJob(notificationService, matchesReadyToMoveService, autoMoveStatusService, notificationContentService);
         jobContext = Substitute.For<IJobExecutionContext>();
     }
 

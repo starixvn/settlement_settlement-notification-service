@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Notification.MoveTickets.Constants;
+﻿using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
@@ -11,7 +10,6 @@ namespace Notification.MoveTickets.Jobs;
 
 [DisallowConcurrentExecution]
 public class MatchReadyToMoveJob(
-    ILogger<MatchReadyToMoveJob> logger,
     NotificationService notificationService,
     IMatchesReadyToMoveService matchesReadyToMoveService,
     IAutoMoveStatusService autoMoveStatusService,
@@ -25,8 +23,7 @@ public class MatchReadyToMoveJob(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error occurred in MatchReadyToMoveJob");
-            throw;
+            Fanex.Logging.LogService.Error(ex.Message, ex);
         }
     }
 
