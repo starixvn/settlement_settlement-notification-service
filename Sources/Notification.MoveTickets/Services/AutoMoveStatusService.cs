@@ -23,7 +23,7 @@ public class AutoMoveStatusService : IAutoMoveStatusService
             var keyExists = await cacheService.ContainAsync(MoveTicketsMessages.CacheKeys.AutoMoveStatus);
             if (!keyExists)
             {
-                return false;
+                return true;
             }
 
             var (success, value) = await cacheService.TryGetAsync<bool>(MoveTicketsMessages.CacheKeys.AutoMoveStatus);

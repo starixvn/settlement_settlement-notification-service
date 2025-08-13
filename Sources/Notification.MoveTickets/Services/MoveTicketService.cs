@@ -25,6 +25,7 @@ public class MoveTicketService(
 {
     public async Task<bool> ProcessMoveTicket(Match match)
     {
+        Fanex.Logging.LogService.Info($"Processing move ticket for match: {match.MatchId}");
         var result = await verifyBeforeMoveTicketsHandler.HandleAsync(match.MatchId);
         if (result.ErrCode != 0)
         {

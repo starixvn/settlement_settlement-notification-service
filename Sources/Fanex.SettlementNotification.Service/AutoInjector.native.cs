@@ -39,13 +39,14 @@ public static class AutoInjector
 
     public static void AddConfigRedisCache(this IServiceCollection services, IConfiguration configuration)
     {
-        var redisConfig = configuration.GetSection("Fanex.Caching.Redis:RedisConfig").Value;
-        var channelPrefix = configuration.GetSection("Fanex.Caching.Redis:ChannelPrefix").Value;
+        var redisConfig = configuration.GetSection("Fanex.Caching.Redis.Ex:RedisConfig").Value;
+        var channelPrefix = configuration.GetSection("Fanex.Caching.Redis.Ex:ChannelPrefix").Value;
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{redisConfig}"));
         services.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
             ConnectionString = redisConfig,
             ApplicationName = channelPrefix,
         }));
+        services.AddRedisCache(configuration.GetSection("Fanex.Caching.Redis"));
     }
 }

@@ -1,22 +1,36 @@
 ﻿using Fanex.Data.Repository;
 using Fanex.SiteDbConnectionManager.Client.Services;
+using Notification.MoveTickets.Models;
+using System.Text.Json;
 
 namespace Notification.MoveTickets.Features.GetMatchTicketInfo;
 
 public interface IGetMatchTicketInfoHandler
 {
-    Task<List<TicketInfo>> HandleAsync(List<int> matchIds);
+    Task<List<TicketInfo>> HandleAsync(List<Match> matches);
 }
 
 public class GetMatchTicketInfoHandler(
     IDynamicRepository repository,
     SiteDbClientService siteDbClientService) : IGetMatchTicketInfoHandler
 {
-    public async Task<List<TicketInfo>> HandleAsync(List<int> matchIds)
+    public async Task<List<TicketInfo>> HandleAsync(List<Match> matches)
     {
+        var resources = matches.Select(x => new GetMatchTicketResource
+        {
+            MatchId = x.MatchId,
+            SportType = x.SportType,
+            ResourceId = x.ResourceId
+        });
+
+        var json = JsonSerializer.Serialize(resources, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
         var criteria = new GetMatchTicketInfoCriteria
         {
-            ListMatchIds = string.Join(",", matchIds)
+            ResourceInfo = json
         };
 
         var allTicketInfos = await GetAllTicketInfosFromAllSites(criteria);

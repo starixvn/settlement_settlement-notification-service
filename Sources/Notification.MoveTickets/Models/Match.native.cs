@@ -11,6 +11,7 @@ public class Match
     public byte SettlementStatus { get; set; }
     public int? ChildMatchId { get; set; }
     public bool IsTest { get; set; }
+    public string ResourceId { get; set; } = string.Empty;
 
     public RemarkSettingModel Remark => new(SettlementStatus);
 }

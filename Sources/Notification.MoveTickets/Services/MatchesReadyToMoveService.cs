@@ -16,8 +16,7 @@ public class MatchesReadyToMoveService(
     public async Task<List<Match>> GetEligibleMatches()
     {
         var allMatches = await getMatchesHandler.HandleAsync();
-        var matchIds = allMatches.Select(m => m.MatchId).ToList();
-        var ticketInfos = await getMatchTicketInfoHandler.HandleAsync(matchIds);
+        var ticketInfos = await getMatchTicketInfoHandler.HandleAsync(allMatches);
 
         return [.. allMatches.Where(match => HasSettledTickets(match.MatchId, ticketInfos))];
     }
