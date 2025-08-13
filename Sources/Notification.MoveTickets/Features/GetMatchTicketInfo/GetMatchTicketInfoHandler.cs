@@ -16,14 +16,15 @@ public class GetMatchTicketInfoHandler(
 {
     public async Task<List<TicketInfo>> HandleAsync(List<Match> matches)
     {
-        var resources = matches.Select(x => new GetMatchTicketResource
-        {
-            MatchId = x.MatchId,
-            SportType = x.SportType,
-            ResourceId = x.ResourceId
-        });
+        var result = matches.SelectMany(match => match.ResourceIds.Select(resourceId =>
+             new GetMatchTicketResource
+             {
+                 MatchId = match.MatchId,
+                 ResourceId = resourceId,
+                 SportType = match.SportType
+             })).ToList();
 
-        var json = JsonSerializer.Serialize(resources, new JsonSerializerOptions
+        var json = JsonSerializer.Serialize(result, new JsonSerializerOptions
         {
             WriteIndented = true
         });
@@ -43,6 +44,7 @@ public class GetMatchTicketInfoHandler(
     {
         var activeSites = await siteDbClientService.GetActiveSiteDbAsync();
         var ticketInfoTasks = CreateTicketInfoTasks(criteria, activeSites);
+
 
         var results = await Task.WhenAll(ticketInfoTasks);
 

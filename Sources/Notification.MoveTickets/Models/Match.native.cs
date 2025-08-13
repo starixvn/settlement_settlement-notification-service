@@ -7,11 +7,12 @@ public class Match
     public int GameSession { get; set; }
     public DateTime? KickOffTime { get; set; }
     public short SportType { get; set; }
-    public bool IsAutoMove { get; set; }
     public byte SettlementStatus { get; set; }
     public int? ChildMatchId { get; set; }
     public bool IsTest { get; set; }
     public string ResourceId { get; set; } = string.Empty;
+
+    public List<string> ResourceIds { get; set; } = [];
 
     public RemarkSettingModel Remark => new(SettlementStatus);
 }

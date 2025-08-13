@@ -17,6 +17,22 @@ public class GetMatchesReadyToMoveHandler(
         var criteria = new GetMatchesReadyToMoveCriteria();
         var matches = await repository.FetchAsync<Match>(criteria);
 
-        return [.. matches];
+        var newMatches = matches
+            .GroupBy(m => m.MatchId)
+            .Select(g => new Match
+            {
+                MatchId = g.Key,
+                SportType = g.First().SportType,
+                ResourceId = g.First().ResourceId,
+                ResourceIds = g.Select(x => x.ResourceId).ToList(),
+                SessionTime = g.First().SessionTime,
+                GameSession = g.First().GameSession,
+                KickOffTime = g.First().KickOffTime,
+                ChildMatchId = g.First().ChildMatchId,
+                SettlementStatus = g.First().SettlementStatus,
+                IsTest = g.First().IsTest,
+            }).ToList();
+
+        return [.. newMatches];
     }
 }
