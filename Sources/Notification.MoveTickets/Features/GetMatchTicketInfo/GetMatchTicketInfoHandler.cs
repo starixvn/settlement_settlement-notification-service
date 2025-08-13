@@ -71,8 +71,8 @@ public class GetMatchTicketInfoHandler(
             .Select(x => new TicketInfo
             {
                 MatchId = x.Key,
-                IsExistsSettledTicket = x.ToList()
-                    .Exists(ticketInfo => ticketInfo.IsExistsSettledTicket)
+                IsExistsTicket = x.ToList()
+                    .Exists(ticketInfo => ticketInfo.IsExistsTicket)
             })
             .ToList();
     }

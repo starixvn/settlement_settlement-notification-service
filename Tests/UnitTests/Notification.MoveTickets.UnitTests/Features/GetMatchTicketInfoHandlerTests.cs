@@ -31,13 +31,13 @@ namespace Notification.MoveTickets.UnitTests.Features
             var matchIds = new List<int> { 1, 2 };
             var ticketsServer1 = new List<TicketInfo>
             {
-                new TicketInfo { MatchId = 1, IsExistsSettledTicket = true },
-                new TicketInfo { MatchId = 2, IsExistsSettledTicket = false }
+                new TicketInfo { MatchId = 1, IsExistsTicket = true },
+                new TicketInfo { MatchId = 2, IsExistsTicket = false }
             };
             var ticketsServer2 = new List<TicketInfo>
             {
-                new TicketInfo { MatchId = 1, IsExistsSettledTicket = false },
-                new TicketInfo { MatchId = 2, IsExistsSettledTicket = true }
+                new TicketInfo { MatchId = 1, IsExistsTicket = false },
+                new TicketInfo { MatchId = 2, IsExistsTicket = true }
             };
             repositorySub.FetchAsync<TicketInfo>(Arg.Is<GetMatchTicketInfoCriteria>(c => c.DbServer == "Server1"))
                 .Returns(ticketsServer1);
@@ -70,11 +70,11 @@ namespace Notification.MoveTickets.UnitTests.Features
             var matchIds = new List<int> { 1 };
             var ticketsServer1 = new List<TicketInfo>
             {
-                new TicketInfo { MatchId = 1, IsExistsSettledTicket = false }
+                new TicketInfo { MatchId = 1, IsExistsTicket = false }
             };
             var ticketsServer2 = new List<TicketInfo>
             {
-                new TicketInfo { MatchId = 1, IsExistsSettledTicket = true }
+                new TicketInfo { MatchId = 1, IsExistsTicket = true }
             };
             repositorySub.FetchAsync<TicketInfo>(Arg.Is<GetMatchTicketInfoCriteria>(c => c.DbServer == "Server1"))
                 .Returns(ticketsServer1);

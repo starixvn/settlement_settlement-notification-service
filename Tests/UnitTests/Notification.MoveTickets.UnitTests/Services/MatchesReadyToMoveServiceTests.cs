@@ -32,9 +32,9 @@ public class MatchesReadyToMoveServiceTests
         };
         var ticketInfos = new List<TicketInfo>
         {
-            new TicketInfo { MatchId = 1, IsExistsSettledTicket = true },
-            new TicketInfo { MatchId = 2, IsExistsSettledTicket = false },
-            new TicketInfo { MatchId = 3, IsExistsSettledTicket = true }
+            new TicketInfo { MatchId = 1, IsExistsTicket = true },
+            new TicketInfo { MatchId = 2, IsExistsTicket = false },
+            new TicketInfo { MatchId = 3, IsExistsTicket = true }
         };
         getMatchesHandler.HandleAsync().Returns(matches);
         getMatchTicketInfoHandler.HandleAsync(Arg.Is<List<int>>(ids => ids.SequenceEqual(new[] { 1, 2, 3 }))).Returns(ticketInfos);
@@ -60,8 +60,8 @@ public class MatchesReadyToMoveServiceTests
         };
         var ticketInfos = new List<TicketInfo>
         {
-            new TicketInfo { MatchId = 1, IsExistsSettledTicket = false },
-            new TicketInfo { MatchId = 2, IsExistsSettledTicket = false }
+            new TicketInfo { MatchId = 1, IsExistsTicket = false },
+            new TicketInfo { MatchId = 2, IsExistsTicket = false }
         };
         getMatchesHandler.HandleAsync().Returns(matches);
         getMatchTicketInfoHandler.HandleAsync(Arg.Any<List<int>>()).Returns(ticketInfos);
