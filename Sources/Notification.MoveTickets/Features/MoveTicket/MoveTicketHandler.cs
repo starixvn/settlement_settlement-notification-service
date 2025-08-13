@@ -1,8 +1,9 @@
 ﻿using Fanex.Data.Repository;
-using Fanex.SiteDbConnectionManager.Client.Services;
+using Microsoft.Extensions.Options;
 using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Features.GetMoveTicketInfo;
 using Notification.MoveTickets.Models;
+using SettlementNotification.Models;
 using SettlementNotification.Services;
 
 namespace Notification.MoveTickets.Features.MoveTicket;
@@ -13,9 +14,9 @@ public interface IMoveTicketHandler
 }
 
 public class MoveTicketHandler(
-    SiteDbClientService siteDbClientService,
     IDynamicRepository repository,
-    ISettleLogService settleLogService) : IMoveTicketHandler
+    ISettleLogService settleLogService,
+    IOptions<AppSettingsKey> settingOptions) : IMoveTicketHandler
 {
     public async Task<(bool, int)> HandleAsync(Match match, MatchMoveInfo moveTicketInfo)
     {
@@ -27,8 +28,7 @@ public class MoveTicketHandler(
             Resources = moveTicketInfo.Resources
         };
 
-        var sitesDb = await siteDbClientService.GetActiveSiteDbAsync();
-        var tasks = sitesDb.Select(s => MoveTicket(s.SiteName, criteria))
+        var tasks = settingOptions.Value.SiteDbServer.Select(s => MoveTicket(s, criteria))
                 .ToArray();
 
         var results = (await Task.WhenAll(tasks))

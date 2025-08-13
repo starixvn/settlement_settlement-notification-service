@@ -41,6 +41,7 @@ public static class QuartzConfiguration
         quartzConfigurator.AddTrigger(triggerOptions => triggerOptions
             .ForJob(jobKey)
             .WithIdentity($"{jobKey.Name}Trigger")
-            .WithCronSchedule(cronExpression));
+        //.StartNow());
+        .WithCronSchedule(cronExpression));
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Fanex.Data.Repository;
-using Fanex.SiteDbConnectionManager.Client.Services;
+using Microsoft.Extensions.Options;
 using Notification.MoveTickets.Models;
+using SettlementNotification.Models;
 using System.Text.Json;
 
 namespace Notification.MoveTickets.Features.GetMatchTicketInfo;
@@ -12,7 +13,7 @@ public interface IGetMatchTicketInfoHandler
 
 public class GetMatchTicketInfoHandler(
     IDynamicRepository repository,
-    SiteDbClientService siteDbClientService) : IGetMatchTicketInfoHandler
+    IOptions<AppSettingsKey> settingOptions) : IGetMatchTicketInfoHandler
 {
     public async Task<List<TicketInfo>> HandleAsync(List<Match> matches)
     {
@@ -42,21 +43,15 @@ public class GetMatchTicketInfoHandler(
 
     private async Task<List<TicketInfo>> GetAllTicketInfosFromAllSites(GetMatchTicketInfoCriteria criteria)
     {
-        var activeSites = await siteDbClientService.GetActiveSiteDbAsync();
-        var ticketInfoTasks = CreateTicketInfoTasks(criteria, activeSites);
+        var tasks = settingOptions.Value.SiteDbServer
+            .Select(server => GetTicketInfosBySiteAsync(criteria, server))
+            .ToList();
 
-
-        var results = await Task.WhenAll(ticketInfoTasks);
+        var results = await Task.WhenAll(tasks);
 
         return [.. results.SelectMany(ticketInfos => ticketInfos)];
     }
 
-    private Task<List<TicketInfo>>[] CreateTicketInfoTasks(GetMatchTicketInfoCriteria criteria, IEnumerable<dynamic> activeSites)
-    {
-        return [.. activeSites
-            .Select(site => GetTicketInfosBySiteAsync(criteria, site.SiteName))
-            .Cast<Task<List<TicketInfo>>>()];
-    }
 
     private async Task<List<TicketInfo>> GetTicketInfosBySiteAsync(GetMatchTicketInfoCriteria criteria, string server)
     {
