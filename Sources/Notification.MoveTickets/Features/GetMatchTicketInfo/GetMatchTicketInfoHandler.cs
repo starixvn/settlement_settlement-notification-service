@@ -45,7 +45,7 @@ public class GetMatchTicketInfoHandler(
     {
         var tasks = settingOptions.Value.SiteDbServer
             .Select(server => GetTicketInfosBySiteAsync(criteria, server))
-            .ToList();
+            .ToArray();
 
         var results = await Task.WhenAll(tasks);
 
@@ -56,6 +56,7 @@ public class GetMatchTicketInfoHandler(
     private async Task<List<TicketInfo>> GetTicketInfosBySiteAsync(GetMatchTicketInfoCriteria criteria, string server)
     {
         criteria.DbServer = server;
+        Fanex.Logging.LogService.Debug($"Fetching ticket info for server: {server} {criteria.ResourceInfo}");
         var ticketInfos = await repository.FetchAsync<TicketInfo>(criteria);
 
         return [.. ticketInfos];
