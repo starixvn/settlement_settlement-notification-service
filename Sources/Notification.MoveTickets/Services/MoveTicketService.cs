@@ -25,6 +25,7 @@ public class MoveTicketService(
 {
     public async Task<bool> ProcessMoveTicket(Match match)
     {
+        var stopWatch = Stopwatch.StartNew();
         var result = await verifyBeforeMoveTicketsHandler.HandleAsync(match.MatchId);
         if (result.ErrCode != 0)
         {
@@ -36,11 +37,8 @@ public class MoveTicketService(
             return false;
         }
 
-        // get tickets that are ready to move
         var moveTicketInfo = await getMatchtInfoHandler.HandleAsync(match.MatchId);
 
-        // move tickets
-        var stopWatch = Stopwatch.StartNew();
         var (resultMoveTicket, ticketCount) = await moveTicketHandler.HandleAsync(match, moveTicketInfo);
         stopWatch.Stop();
 
@@ -53,6 +51,8 @@ public class MoveTicketService(
                 MoveTicketConts.ActionIdMoveTicket);
 
             await updateMatchHandler.HandleAsync(moveTicketInfo.ChildMatchId);
+
+            return true;
         }
 
         return false;

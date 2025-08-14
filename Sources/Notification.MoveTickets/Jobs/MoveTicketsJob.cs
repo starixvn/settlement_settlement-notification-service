@@ -1,9 +1,11 @@
 ﻿using Notification.MoveTickets.Constants;
+using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
 using SettlementNotification.Constants;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
+using System.Diagnostics;
 
 namespace Notification.MoveTickets.Jobs;
 
@@ -12,36 +14,77 @@ public class MoveTicketsJob(
     IAutoMoveStatusService autoMoveStatusService,
     IMatchesReadyToMoveService matchesReadyToMoveService,
     IMoveTicketService moveTicketService,
-    NotificationService notificationService) : IJob
+    NotificationService notificationService,
+    INotificationContentService notificationContentService) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
         try
         {
+            var stopwatch = Stopwatch.StartNew();
             if (!await autoMoveStatusService.GetAutoMoveStatus())
             {
                 SendNotificationOffSetting();
                 return;
             }
 
-            var matchMoveSuccess = 0;
             var matches = await matchesReadyToMoveService.GetEligibleMatches();
+            var (successfulMatches, failedMatches) = await ProcessMatches(matches);
+            stopwatch.Stop();
 
-            foreach (var item in matches)
-            {
-                var result = await moveTicketService.ProcessMoveTicket(item);
-                matchMoveSuccess = result ? matchMoveSuccess + 1 : matchMoveSuccess;
-            }
-
-            if (matchMoveSuccess == 0)
+            if (failedMatches.Count == matches.Count)
             {
                 SendNotifycationNoMatchMoveSucess();
+            }
+            else
+            {
+                SendNotificationCompleteMoveTicket((int)stopwatch.ElapsedMilliseconds, successfulMatches, failedMatches);
             }
         }
         catch (Exception ex)
         {
             Fanex.Logging.LogService.Error(ex.Message, ex);
         }
+    }
+
+
+    private async Task<(List<Match> successful, List<Match> failed)> ProcessMatches(List<Match> matches)
+    {
+        var successfulMatches = new List<Match>();
+        var failedMatches = new List<Match>();
+
+        foreach (var match in matches)
+        {
+
+            var result = await moveTicketService.ProcessMoveTicket(match);
+            if (result)
+            {
+                successfulMatches.Add(match);
+            }
+            else
+            {
+                failedMatches.Add(match);
+            }
+
+        }
+
+        return (successfulMatches, failedMatches);
+    }
+
+
+    private void SendNotificationCompleteMoveTicket(int excuteTime, List<Match> matchesSuccess, List<Match> matchesFail)
+    {
+        var notificationContent = notificationContentService.CreateExecutionSummaryContent(excuteTime, matchesSuccess, matchesFail);
+        var notificationModel = new NotificationModel
+        {
+            ActionName = MoveTicketsMessages.ActionNames.AutoMoveTickets,
+            MessageContent = notificationContent,
+            MessageType = MoveTicketsMessages.MessageTypes.Reminder,
+            MessageGroupId = MessageGroup.MoveTicket,
+            LetstalkGroup = LetstalkGroup.Notification
+        };
+
+        notificationService.Notify(notificationModel);
     }
 
     private void SendNotificationOffSetting()

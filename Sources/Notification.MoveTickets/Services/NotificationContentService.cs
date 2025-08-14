@@ -8,10 +8,38 @@ namespace Notification.MoveTickets.Services;
 public interface INotificationContentService
 {
     string CreateNotificationContent(List<Match> matches, bool isAutoMoveEnabled);
+    string CreateExecutionSummaryContent(int excuteTime, List<Match> matchesSuccess, List<Match> matchesFail);
+
 }
 
 public class NotificationContentService : INotificationContentService
 {
+
+    public string CreateExecutionSummaryContent(int excuteTime, List<Match> matchesSuccess, List<Match> matchesFail)
+    {
+        var contentBuilder = new StringBuilder();
+        contentBuilder.AppendLine(string.Format(MoveTicketsMessages.ContentTemplates.ExecutionSummaryHeader, excuteTime));
+
+        if (matchesSuccess.Count > 0)
+        {
+            var x = GetMatchesBySport(matchesSuccess, SportType.Baseball);
+            var y = GetMatchesBySport(matchesSuccess, SportType.Cricket);
+            contentBuilder.AppendLine(MoveTicketsMessages.ContentTemplates.SuccessfulMovesHeader);
+            AppendSportMatches(contentBuilder, "Baseball", GetMatchesBySport(matchesSuccess, SportType.Baseball));
+            AppendSportMatches(contentBuilder, "Cricket", GetMatchesBySport(matchesSuccess, SportType.Cricket));
+        }
+
+
+        if (matchesFail.Count > 0)
+        {
+            contentBuilder.AppendLine(MoveTicketsMessages.ContentTemplates.FailedMovesHeader);
+            AppendSportMatches(contentBuilder, "Baseball", GetMatchesBySport(matchesFail, SportType.Baseball));
+            AppendSportMatches(contentBuilder, "Cricket", GetMatchesBySport(matchesFail, SportType.Cricket));
+        }
+
+        return contentBuilder.ToString();
+    }
+
     public string CreateNotificationContent(List<Match> matches, bool isAutoMoveEnabled)
     {
         var matchCategories = CategorizeMatches(matches);
@@ -22,20 +50,20 @@ public class NotificationContentService : INotificationContentService
     {
         return new MatchCategories
         {
-            BaseballMatches = GetMatchesBySportType(matches, SportType.Baseball),
-            CricketMatches = GetMatchesBySportType(matches, SportType.Cricket),
-            OnHoldMatches = GetOnHoldMatches(matches),
+            BaseballMatches = GetReadyMatchesBySportType(matches, SportType.Baseball),
+            CricketMatches = GetReadyMatchesBySportType(matches, SportType.Cricket),
+            OnHoldMatches = matches.Where(match => IsMatchOnHold(match.Remark)).ToList(),
             MatchesWithoutChild = GetMatchesWithoutChildMatches(matches)
         };
     }
 
-    private static List<Match> GetMatchesBySportType(List<Match> matches, short sportType)
+    private static List<Match> GetReadyMatchesBySportType(List<Match> matches, short sportType)
         => [.. matches.Where(match => match.SportType == sportType && !IsMatchOnHold(match.Remark) && HasValidChildMatch(match.ChildMatchId))];
 
-    private static List<Match> GetOnHoldMatches(List<Match> matches)
-    {
-        return matches.Where(match => IsMatchOnHold(match.Remark)).ToList();
-    }
+    private static List<Match> GetMatchesBySport(List<Match> matches, short sportType)
+    => [.. matches.Where(match => match.SportType == sportType)];
+
+
 
     private static bool IsMatchOnHold(RemarkSettingModel remark)
     {
@@ -114,6 +142,8 @@ public class NotificationContentService : INotificationContentService
         builder.AppendLine(MoveTicketsMessages.ExecutionMessages.Unresolved);
         builder.AppendLine(MoveTicketsMessages.ExecutionMessages.NewMatch);
     }
+
+
 }
 
 public class MatchCategories

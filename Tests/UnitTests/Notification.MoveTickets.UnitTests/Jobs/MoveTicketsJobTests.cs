@@ -17,6 +17,7 @@ public class MoveTicketsJobTests
     private readonly IMatchesReadyToMoveService matchesReadyToMoveService;
     private readonly IMoveTicketService moveTicketService;
     private readonly NotificationService notificationService;
+    private readonly INotificationContentService notificationContentService;
 
     private readonly MoveTicketsJob job;
     private readonly IJobExecutionContext jobContext;
@@ -27,8 +28,9 @@ public class MoveTicketsJobTests
         matchesReadyToMoveService = Substitute.For<IMatchesReadyToMoveService>();
         moveTicketService = Substitute.For<IMoveTicketService>();
         notificationService = Substitute.For<NotificationService>();
+        notificationContentService = Substitute.For<INotificationContentService>();
 
-        job = new MoveTicketsJob(autoMoveStatusService, matchesReadyToMoveService, moveTicketService, notificationService);
+        job = new MoveTicketsJob(autoMoveStatusService, matchesReadyToMoveService, moveTicketService, notificationService, notificationContentService);
         jobContext = Substitute.For<IJobExecutionContext>();
     }
 
