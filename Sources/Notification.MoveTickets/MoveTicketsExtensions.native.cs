@@ -16,16 +16,16 @@ public static class MoveTicketsExtensions
     {
         services
             .AddQuartzServices(configuration)
-            .AddScoped<IGetMatchesReadyToMoveHandler, GetMatchesReadyToMoveHandler>()
-            .AddScoped<IGetMatchTicketInfoHandler, GetMatchTicketInfoHandler>()
-            .AddScoped<IGetMatchtInfoHandler, GetMatchtInfoHandler>()
-            .AddScoped<IVerifyBeforeMoveTicketsHandler, VerifyBeforeMoveTicketsHandler>()
-            .AddScoped<IMoveTicketHandler, MoveTicketHandler>()
-            .AddScoped<IUpdateMatchHandler, UpdateMatchHandler>()
-            .AddScoped<INotificationContentService, NotificationContentService>()
-            .AddScoped<IAutoMoveStatusService, AutoMoveStatusService>()
-            .AddScoped<IMatchesReadyToMoveService, MatchesReadyToMoveService>()
-            .AddScoped<IMoveTicketService, MoveTicketService>();
+            .AddTransient<IGetMatchesReadyToMoveHandler, GetMatchesReadyToMoveHandler>()
+            .AddTransient<IGetMatchTicketInfoHandler, GetMatchTicketInfoHandler>()
+            .AddTransient<IGetMatchtInfoHandler, GetMatchtInfoHandler>()
+            .AddTransient<IVerifyBeforeMoveTicketsHandler, VerifyBeforeMoveTicketsHandler>()
+            .AddTransient<IMoveTicketHandler, MoveTicketHandler>()
+            .AddTransient<IUpdateMatchHandler, UpdateMatchHandler>()
+            .AddTransient<INotificationContentService, NotificationContentService>()
+            .AddTransient<IAutoMoveStatusService, AutoMoveStatusService>()
+            .AddTransient<IMatchesReadyToMoveService, MatchesReadyToMoveService>()
+            .AddTransient<IMoveTicketService, MoveTicketService>();
 
         return services;
     }

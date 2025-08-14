@@ -16,12 +16,11 @@ public class MatchesReadyToMoveService(
     public async Task<List<Match>> GetEligibleMatches()
     {
         var allMatches = await getMatchesHandler.HandleAsync();
-        Fanex.Logging.LogService.Info($"Found {string.Join(", ", allMatches.Select(x => x.MatchId))} matches ready to move.");
         var ticketInfos = await getMatchTicketInfoHandler.HandleAsync(allMatches);
 
-        return [.. allMatches.Where(match => HasSettledTickets(match.MatchId, ticketInfos))];
+        return [.. allMatches.Where(match => HasTickets(match.MatchId, ticketInfos))];
     }
 
-    private static bool HasSettledTickets(int matchId, List<TicketInfo> ticketInfos)
+    private static bool HasTickets(int matchId, List<TicketInfo> ticketInfos)
         => ticketInfos.Exists(ticket => ticket.MatchId == matchId && ticket.IsExistsTicket);
 }

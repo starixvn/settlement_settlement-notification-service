@@ -17,6 +17,11 @@ public class GetMatchTicketInfoHandler(
 {
     public async Task<List<TicketInfo>> HandleAsync(List<Match> matches)
     {
+        if (matches.Count == 0)
+        {
+            return [];
+        }
+
         var result = matches.SelectMany(match => match.ResourceIds.Select(resourceId =>
              new GetMatchTicketResource
              {
@@ -25,10 +30,7 @@ public class GetMatchTicketInfoHandler(
                  SportType = match.SportType
              })).ToList();
 
-        var json = JsonSerializer.Serialize(result, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
+        var json = JsonSerializer.Serialize(result);
 
         var criteria = new GetMatchTicketInfoCriteria
         {
@@ -56,7 +58,6 @@ public class GetMatchTicketInfoHandler(
     private async Task<List<TicketInfo>> GetTicketInfosBySiteAsync(GetMatchTicketInfoCriteria criteria, string server)
     {
         criteria.DbServer = server;
-        Fanex.Logging.LogService.Debug($"Fetching ticket info for server: {server} {criteria.ResourceInfo}");
         var ticketInfos = await repository.FetchAsync<TicketInfo>(criteria);
 
         return [.. ticketInfos];
