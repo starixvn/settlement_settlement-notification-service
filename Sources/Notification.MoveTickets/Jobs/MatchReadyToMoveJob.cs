@@ -1,4 +1,5 @@
-﻿using Notification.MoveTickets.Constants;
+﻿using Microsoft.Extensions.Logging;
+using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
@@ -13,10 +14,12 @@ public class MatchReadyToMoveJob(
     NotificationService notificationService,
     IMatchesReadyToMoveService matchesReadyToMoveService,
     IAutoMoveStatusService autoMoveStatusService,
-    INotificationContentService notificationContentService) : IJob
+    INotificationContentService notificationContentService,
+    ILogger<MatchReadyToMoveJob> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
+        logger.LogInformation("MatchReadyToMoveJob started at {Time}", DateTime.UtcNow);
         try
         {
             await ProcessMatchReadyToMove();
@@ -31,6 +34,7 @@ public class MatchReadyToMoveJob(
     {
         var isAutoMoveEnabled = await autoMoveStatusService.GetAutoMoveStatus();
         var eligibleMatches = await matchesReadyToMoveService.GetEligibleMatches();
+        Fanex.Logging.LogService.Info($"MatchReadyToMoveJob started at {DateTime.UtcNow} with {string.Join(", ", eligibleMatches.Select(x => x.MatchId))} and setting {isAutoMoveEnabled}");
 
         if (eligibleMatches.Count == 0)
         {
@@ -75,4 +79,5 @@ public class MatchReadyToMoveJob(
             LetstalkGroup = LetstalkGroup.Notification
         };
     }
+
 }

@@ -1,4 +1,5 @@
-﻿using Notification.MoveTickets.Constants;
+﻿using Microsoft.Extensions.Logging;
+using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
@@ -15,14 +16,19 @@ public class MoveTicketsJob(
     IMatchesReadyToMoveService matchesReadyToMoveService,
     IMoveTicketService moveTicketService,
     NotificationService notificationService,
-    INotificationContentService notificationContentService) : IJob
+    INotificationContentService notificationContentService,
+    ILogger<MoveTicketsJob> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
+        logger.LogInformation("MoveTicketsJob started at {Time}", DateTime.UtcNow);
         try
         {
             var stopwatch = Stopwatch.StartNew();
-            if (!await autoMoveStatusService.GetAutoMoveStatus())
+            var setting = await autoMoveStatusService.GetAutoMoveStatus();
+            Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTime.UtcNow} with {setting}");
+
+            if (!setting)
             {
                 SendNotificationOffSetting();
                 return;
