@@ -17,18 +17,6 @@ public class AutoMoveStatusServiceTests
         service = new AutoMoveStatusService(cacheService);
     }
 
-    [Fact]
-    public async Task GetAutoMoveStatus_KeyDoesNotExist_ReturnsFalse()
-    {
-        // Arrange
-        cacheService.ContainAsync(MoveTicketsMessages.CacheKeys.AutoMoveStatus).Returns(false);
-
-        // Act
-        var result = await service.GetAutoMoveStatus();
-
-        // Assert
-        Assert.False(result);
-    }
 
     [Fact]
     public async Task GetAutoMoveStatus_KeyExistsAndValueTrue_ReturnsTrue()

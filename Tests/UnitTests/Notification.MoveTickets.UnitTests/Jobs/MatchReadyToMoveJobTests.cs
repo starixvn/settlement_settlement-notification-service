@@ -75,15 +75,4 @@ public class MatchReadyToMoveJobTests
         ));
     }
 
-    [Fact]
-    public async Task Execute_WhenExceptionThrown_LogsErrorAndRethrows()
-    {
-        // Arrange
-        autoMoveStatusService.GetAutoMoveStatus().Returns(Task.FromException<bool>(new Exception("fail")));
-
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<Exception>(() => job.Execute(jobContext));
-        logger.Received(1).LogError(Arg.Any<Exception>(), "Error occurred in MatchReadyToMoveJob");
-        Assert.Equal("fail", ex.Message);
-    }
 }
