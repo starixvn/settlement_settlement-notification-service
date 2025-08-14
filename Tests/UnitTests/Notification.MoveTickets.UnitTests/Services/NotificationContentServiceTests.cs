@@ -48,8 +48,8 @@ public class NotificationContentServiceTests
         // Arrange
         var matches = new List<Match>
         {
-            new() { MatchId = 1, SportType = SportType.Baseball },
-            new() { MatchId = 2, SportType = SportType.Baseball },
+            new() { MatchId = 1, SportType = SportType.Baseball, ChildMatchId = 1 },
+            new() { MatchId = 2, SportType = SportType.Baseball,ChildMatchId = 1},
         };
 
         // Act
@@ -66,8 +66,8 @@ public class NotificationContentServiceTests
         // Arrange
         var matches = new List<Match>
         {
-            new() { MatchId = 1, SportType = SportType.Cricket },
-            new() { MatchId = 2, SportType = SportType.Cricket },
+            new() { MatchId = 1, SportType = SportType.Cricket,ChildMatchId = 1 },
+            new() { MatchId = 2, SportType = SportType.Cricket,ChildMatchId = 1 },
         };
 
         // Act
@@ -173,8 +173,8 @@ public class NotificationContentServiceTests
         // Arrange
         var matches = new List<Match>
         {
-            new() { MatchId = 1, SportType = SportType.Baseball, SettlementStatus = 0 }, // Not on hold
-            new() { MatchId = 2, SportType = SportType.Cricket, SettlementStatus = 0 }  // Not on hold
+            new() { MatchId = 1, SportType = SportType.Baseball, SettlementStatus = 0,ChildMatchId = 1 }, // Not on hold
+            new() { MatchId = 2, SportType = SportType.Cricket, SettlementStatus = 0, ChildMatchId = 1 }  // Not on hold
         };
 
         // Act
@@ -211,8 +211,8 @@ public class NotificationContentServiceTests
         // Arrange
         var matches = new List<Match>
         {
-            new() { MatchId = 1, SportType = SportType.Cricket },
-            new() { MatchId = 2, SportType = SportType.Soccer }
+            new() { MatchId = 1, SportType = SportType.Cricket, ChildMatchId = 1 },
+            new() { MatchId = 2, SportType = SportType.Soccer,ChildMatchId = 1 }
         };
 
         // Act
@@ -229,8 +229,8 @@ public class NotificationContentServiceTests
         // Arrange
         var matches = new List<Match>
         {
-            new() { MatchId = 1, SportType = SportType.Baseball },
-            new() { MatchId = 2, SportType = SportType.Soccer }
+            new() { MatchId = 1, SportType = SportType.Baseball,ChildMatchId = 1 },
+            new() { MatchId = 2, SportType = SportType.Soccer,ChildMatchId = 1 }
         };
 
         // Act

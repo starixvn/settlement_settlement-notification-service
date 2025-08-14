@@ -30,9 +30,7 @@ public class NotificationContentService : INotificationContentService
     }
 
     private static List<Match> GetMatchesBySportType(List<Match> matches, short sportType)
-    {
-        return matches.Where(match => match.SportType == sportType).ToList();
-    }
+        => [.. matches.Where(match => match.SportType == sportType && !IsMatchOnHold(match.Remark) && HasValidChildMatch(match.ChildMatchId))];
 
     private static List<Match> GetOnHoldMatches(List<Match> matches)
     {
