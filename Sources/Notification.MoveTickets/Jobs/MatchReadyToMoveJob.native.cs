@@ -19,7 +19,7 @@ public class MatchReadyToMoveJob(
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        logger.LogInformation("MatchReadyToMoveJob started at {Time}", DateTime.UtcNow);
+        logger.LogInformation("MatchReadyToMoveJob started at {Time}", DateTimeOffset.UtcNow);
         try
         {
             await ProcessMatchReadyToMove();
@@ -34,7 +34,7 @@ public class MatchReadyToMoveJob(
     {
         var isAutoMoveEnabled = await autoMoveStatusService.GetAutoMoveStatus();
         var eligibleMatches = await matchesReadyToMoveService.GetEligibleMatches();
-        Fanex.Logging.LogService.Info($"MatchReadyToMoveJob started at {DateTime.UtcNow} with {string.Join(", ", eligibleMatches.Select(x => x.MatchId))} and setting {isAutoMoveEnabled}");
+        Fanex.Logging.LogService.Info($"MatchReadyToMoveJob started at {DateTimeOffset.UtcNow} with {string.Join(", ", eligibleMatches.Select(x => x.MatchId))} and setting {isAutoMoveEnabled}");
 
         if (eligibleMatches.Count == 0)
         {

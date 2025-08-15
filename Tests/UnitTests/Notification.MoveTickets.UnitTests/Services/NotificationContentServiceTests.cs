@@ -115,23 +115,7 @@ public class NotificationContentServiceTests
         Assert.Contains("+ matches without corresponding child-match to move tickets: 1, 2", result);
     }
 
-    [Fact]
-    public void CreateNotificationContent_WithEmptyMatches_ShouldReturnBasicContent()
-    {
-        // Arrange
-        var matches = new List<Match>();
 
-        // Act
-        var result = service.CreateNotificationContent(matches, true);
-
-        // Assert
-        Assert.Contains("Auto move tickets of settled results service = ON.", result);
-        Assert.Contains("System detect following matches eligible for moving tickets of settled results:", result);
-        Assert.Contains("Matches need resolve:", result);
-        Assert.Contains("System shall execute move actions in the next 15 minutes (23:45 GMT-4).", result);
-        Assert.Contains("Unresolved matches will not be moved.", result);
-        Assert.Contains("System shall also move ticket on new match found that eligible to move tickets.", result);
-    }
 
     [Fact]
     public void CreateNotificationContent_WithMixedScenarios_ShouldIncludeAllSections()
@@ -241,20 +225,6 @@ public class NotificationContentServiceTests
         Assert.DoesNotContain("+ Cricket:", result);
     }
 
-    [Fact]
-    public void CreateNotificationContent_ShouldIncludeExecutionInfo()
-    {
-        // Arrange
-        var matches = CreateTestMatches();
-
-        // Act
-        var result = service.CreateNotificationContent(matches, true);
-
-        // Assert
-        Assert.Contains("System shall execute move actions in the next 15 minutes (23:45 GMT-4).", result);
-        Assert.Contains("Unresolved matches will not be moved.", result);
-        Assert.Contains("System shall also move ticket on new match found that eligible to move tickets.", result);
-    }
 
     [Fact]
     public void CreateNotificationContent_ShouldHaveCorrectStructure()

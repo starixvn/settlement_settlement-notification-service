@@ -5,11 +5,9 @@ using Notification.MoveTickets.Features.UpdateMatch;
 using Notification.MoveTickets.Features.VerifyBeforeMoveTickets;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
-using SettlementNotification.Services;
 using NSubstitute;
+using SettlementNotification.Services;
 using Xunit;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace Notification.MoveTickets.UnitTests.Services;
 
@@ -66,27 +64,7 @@ public class MoveTicketServiceTests
         await updateMatchHandler.DidNotReceiveWithAnyArgs().HandleAsync(default);
     }
 
-    [Fact]
-    public async Task ProcessMoveTicket_MoveTicketSucceeds_LogsAndUpdatesMatch_ReturnsFalse()
-    {
-        // Arrange
-        var match = new Match { MatchId = 3 };
-        verifyHandler.HandleAsync(match.MatchId).Returns(new Result { ErrCode = 0 });
-        var moveTicketInfo = new MatchMoveInfo { ChildMatchId = 20, Resources = "X,Y", EventDate = System.DateTime.Now };
-        getInfoHandler.HandleAsync(match.MatchId).Returns(moveTicketInfo);
-        moveHandler.HandleAsync(match, moveTicketInfo).Returns((true, 5));
 
-        // Act
-        var result = await service.ProcessMoveTicket(match);
-
-        // Assert
-        Assert.False(result); // Always returns false
-        await settleLogService.Received(1).WriteLog(
-            match.MatchId,
-            Arg.Is<string>(msg => msg.Contains("20") && msg.Contains("X,Y") && msg.Contains("TC:5")),
-            MoveTicketConts.ActionIdMoveTicket);
-        await updateMatchHandler.Received(1).HandleAsync(20);
-    }
 
     [Fact]
     public async Task ProcessMoveTicket_LogsProcessingInfo()

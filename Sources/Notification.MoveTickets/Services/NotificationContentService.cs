@@ -22,8 +22,6 @@ public class NotificationContentService : INotificationContentService
 
         if (matchesSuccess.Count > 0)
         {
-            var x = GetMatchesBySport(matchesSuccess, SportType.Baseball);
-            var y = GetMatchesBySport(matchesSuccess, SportType.Cricket);
             contentBuilder.AppendLine(MoveTicketsMessages.ContentTemplates.SuccessfulMovesHeader);
             AppendSportMatches(contentBuilder, "Baseball", GetMatchesBySport(matchesSuccess, SportType.Baseball));
             AppendSportMatches(contentBuilder, "Cricket", GetMatchesBySport(matchesSuccess, SportType.Cricket));

@@ -18,7 +18,12 @@ public class ContentServiceImp : ContentService
         var temp = model.MessageGroupId == MessageGroup.MatchReadyToMove
             ? "MatchReadyToMoveTemplate.cshtml"
             : "AlertTemplate.cshtml";
+
+        var templateKey = model.MessageGroupId == MessageGroup.MatchReadyToMove
+            ? "MatchReadyToMoveTemplate"
+            : "AlertTemplate";
+
         var path = $"{AppDomain.CurrentDomain.BaseDirectory}Templates{Path.DirectorySeparatorChar}{temp}";
-        return Engine.Razor.RunCompile(File.ReadAllText(path), "Alert Template", model: model);
+        return Engine.Razor.RunCompile(File.ReadAllText(path), templateKey, model: model);
     }
 }

@@ -26,7 +26,7 @@ public class MoveTicketsJob(
         {
             var stopwatch = Stopwatch.StartNew();
             var setting = await autoMoveStatusService.GetAutoMoveStatus();
-            Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTime.UtcNow} with {setting}");
+            Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTimeOffset.UtcNow} with {setting}");
 
             if (!setting)
             {
@@ -35,13 +35,14 @@ public class MoveTicketsJob(
             }
 
             var matches = await matchesReadyToMoveService.GetEligibleMatches();
-            Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTime.UtcNow} with {setting} and matches {string.Join(", ", matches.Select(x => x.MatchId))}");
+            Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTimeOffset.UtcNow} with {setting} and matches {string.Join(", ", matches.Select(x => x.MatchId))}");
 
 
             var (successfulMatches, failedMatches) = await ProcessMatches(matches);
             stopwatch.Stop();
 
-            Fanex.Logging.LogService.Info($"MoveTicketsJob end at {DateTime.UtcNow} with {setting} and succees matches {string.Join(", ", successfulMatches.Select(x => x.MatchId))} and fail {string.Join(", ", failedMatches.Select(x => x.MatchId))}");
+            Fanex.Logging.LogService.Info($"MoveTicketsJob matches {string.Join(", ", successfulMatches.Select(x => x.MatchId))}");
+            Fanex.Logging.LogService.Info($"MoveTicketsJob  fail {string.Join(", ", failedMatches.Select(x => x.MatchId))}");
 
             if (failedMatches.Count == 0 && successfulMatches.Count == 0)
             {
@@ -58,15 +59,6 @@ public class MoveTicketsJob(
             Fanex.Logging.LogService.Error(ex.Message, ex);
         }
     }
-
-    private static bool IsMatchOnHold(RemarkSettingModel remark)
-    {
-        var isPendingOrUndecided = remark.IsPending || remark.IsUndecided;
-        var isUnderSettleOrMtdHold = remark.IsUnderSettle || remark.IsMtdHold;
-
-        return isPendingOrUndecided || isUnderSettleOrMtdHold || remark.IsKeyHold;
-    }
-
 
     private async Task<(List<Match> successful, List<Match> failed)> ProcessMatches(List<Match> matches)
     {
