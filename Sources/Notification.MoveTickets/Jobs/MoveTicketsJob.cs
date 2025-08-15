@@ -35,15 +35,21 @@ public class MoveTicketsJob(
             }
 
             var matches = await matchesReadyToMoveService.GetEligibleMatches();
+            Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTime.UtcNow} with {setting} and matches {string.Join(", ", matches.Select(x => x.MatchId))}");
+
+
             var (successfulMatches, failedMatches) = await ProcessMatches(matches);
             stopwatch.Stop();
 
-            if (failedMatches.Count == matches.Count)
+            Fanex.Logging.LogService.Info($"MoveTicketsJob end at {DateTime.UtcNow} with {setting} and succees matches {string.Join(", ", successfulMatches.Select(x => x.MatchId))} and fail {string.Join(", ", failedMatches.Select(x => x.MatchId))}");
+
+            if (failedMatches.Count == 0 && successfulMatches.Count == 0)
             {
                 SendNotifycationNoMatchMoveSucess();
             }
             else
             {
+
                 SendNotificationCompleteMoveTicket((int)stopwatch.ElapsedMilliseconds, successfulMatches, failedMatches);
             }
         }
@@ -51,6 +57,14 @@ public class MoveTicketsJob(
         {
             Fanex.Logging.LogService.Error(ex.Message, ex);
         }
+    }
+
+    private static bool IsMatchOnHold(RemarkSettingModel remark)
+    {
+        var isPendingOrUndecided = remark.IsPending || remark.IsUndecided;
+        var isUnderSettleOrMtdHold = remark.IsUnderSettle || remark.IsMtdHold;
+
+        return isPendingOrUndecided || isUnderSettleOrMtdHold || remark.IsKeyHold;
     }
 
 
@@ -81,12 +95,13 @@ public class MoveTicketsJob(
     private void SendNotificationCompleteMoveTicket(int excuteTime, List<Match> matchesSuccess, List<Match> matchesFail)
     {
         var notificationContent = notificationContentService.CreateExecutionSummaryContent(excuteTime, matchesSuccess, matchesFail);
+        Fanex.Logging.LogService.Info($"SendNotificationCompleteMoveTicket with content {notificationContent}");
         var notificationModel = new NotificationModel
         {
             ActionName = MoveTicketsMessages.ActionNames.AutoMoveTickets,
             MessageContent = notificationContent,
             MessageType = MoveTicketsMessages.MessageTypes.Reminder,
-            MessageGroupId = MessageGroup.MoveTicket,
+            MessageGroupId = MessageGroup.MatchReadyToMove,
             LetstalkGroup = LetstalkGroup.Notification
         };
 
