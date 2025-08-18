@@ -1,5 +1,8 @@
-﻿using Fanex.Data.Repository;
+﻿using Fanex.Caching;
+using Fanex.Data.Repository;
+using Microsoft.Extensions.Options;
 using Notification.MoveTickets.Models;
+using SettlementNotification.Models;
 
 namespace Notification.MoveTickets.Features.GetMatchesReadyToMove;
 
@@ -9,19 +12,26 @@ public interface IGetMatchesReadyToMoveHandler
 }
 
 public class GetMatchesReadyToMoveHandler(
-    IDynamicRepository repository
+    IDynamicRepository repository,
+    IOptions<AppSettingsKey> appSettingsKey,
+        ICache cache
  ) : IGetMatchesReadyToMoveHandler
 {
+    private const string KEY_LEAGUEIDS_TEST = "Settlement-AutoSettle-LeagueIds";
+
     public async Task<List<Match>> HandleAsync()
     {
         var criteria = new GetMatchesReadyToMoveCriteria();
         var matches = await repository.FetchAsync<Match>(criteria);
+        var (_, response) = await cache.TryGetAsync<string>(KEY_LEAGUEIDS_TEST);
+        var leagueIds = (response ?? "").Split(",");
 
         var newMatches = matches
             .GroupBy(m => m.MatchId)
             .Select(g => new Match
             {
                 MatchId = g.Key,
+                LeagueId = g.First().LeagueId,
                 SportType = g.First().SportType,
                 ResourceId = g.First().ResourceId,
                 ResourceIds = g.Select(x => x.ResourceId).ToList(),
@@ -33,6 +43,15 @@ public class GetMatchesReadyToMoveHandler(
                 IsTest = g.First().IsTest,
             }).ToList();
 
-        return [.. newMatches];
+        var filteredMatches = appSettingsKey.Value.EnvironmentName switch
+        {
+            "PRO" => leagueIds.Length > 0
+                ? [.. newMatches.Where(m => !leagueIds.Contains(m.LeagueId.ToString()))]
+                : newMatches,
+            "UAT" => [.. newMatches.Where(m => leagueIds.Contains(m.LeagueId.ToString()))],
+            _ => newMatches
+        };
+
+        return [.. filteredMatches];
     }
 }

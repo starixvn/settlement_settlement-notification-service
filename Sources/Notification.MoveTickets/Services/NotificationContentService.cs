@@ -8,17 +8,17 @@ namespace Notification.MoveTickets.Services;
 public interface INotificationContentService
 {
     string CreateNotificationContent(List<Match> matches, bool isAutoMoveEnabled);
-    string CreateExecutionSummaryContent(int excuteTime, List<Match> matchesSuccess, List<Match> matchesFail);
+    string CreateExecutionSummaryContent(List<Match> matchesSuccess, List<Match> matchesFail);
 
 }
 
 public class NotificationContentService : INotificationContentService
 {
 
-    public string CreateExecutionSummaryContent(int excuteTime, List<Match> matchesSuccess, List<Match> matchesFail)
+    public string CreateExecutionSummaryContent(List<Match> matchesSuccess, List<Match> matchesFail)
     {
         var contentBuilder = new StringBuilder();
-        contentBuilder.AppendLine(string.Format(MoveTicketsMessages.ContentTemplates.ExecutionSummaryHeader, excuteTime));
+        contentBuilder.AppendLine(string.Format(MoveTicketsMessages.ContentTemplates.ExecutionSummaryHeader, DateTimeOffset.Now));
 
         if (matchesSuccess.Count > 0)
         {

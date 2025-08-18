@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Notification.MoveTickets.Constants;
+﻿using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
@@ -14,12 +13,10 @@ public class MatchReadyToMoveJob(
     NotificationService notificationService,
     IMatchesReadyToMoveService matchesReadyToMoveService,
     IAutoMoveStatusService autoMoveStatusService,
-    INotificationContentService notificationContentService,
-    ILogger<MatchReadyToMoveJob> logger) : IJob
+    INotificationContentService notificationContentService) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        logger.LogInformation("MatchReadyToMoveJob started at {Time}", DateTimeOffset.UtcNow);
         try
         {
             await ProcessMatchReadyToMove();

@@ -1,12 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
-using Notification.MoveTickets.Constants;
+﻿using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
 using SettlementNotification.Constants;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
-using System.Diagnostics;
 
 namespace Notification.MoveTickets.Jobs;
 
@@ -16,15 +14,12 @@ public class MoveTicketsJob(
     IMatchesReadyToMoveService matchesReadyToMoveService,
     IMoveTicketService moveTicketService,
     NotificationService notificationService,
-    INotificationContentService notificationContentService,
-    ILogger<MoveTicketsJob> logger) : IJob
+    INotificationContentService notificationContentService) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        logger.LogInformation("MoveTicketsJob started at {Time}", DateTime.UtcNow);
         try
         {
-            var stopwatch = Stopwatch.StartNew();
             var setting = await autoMoveStatusService.GetAutoMoveStatus();
             Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTimeOffset.UtcNow} with {setting}");
 
@@ -39,7 +34,6 @@ public class MoveTicketsJob(
 
 
             var (successfulMatches, failedMatches) = await ProcessMatches(matches);
-            stopwatch.Stop();
 
             Fanex.Logging.LogService.Info($"MoveTicketsJob matches {string.Join(", ", successfulMatches.Select(x => x.MatchId))}");
             Fanex.Logging.LogService.Info($"MoveTicketsJob  fail {string.Join(", ", failedMatches.Select(x => x.MatchId))}");
@@ -51,7 +45,7 @@ public class MoveTicketsJob(
             else
             {
 
-                SendNotificationCompleteMoveTicket((int)stopwatch.ElapsedMilliseconds, successfulMatches, failedMatches);
+                SendNotificationCompleteMoveTicket(successfulMatches, failedMatches);
             }
         }
         catch (Exception ex)
@@ -84,9 +78,9 @@ public class MoveTicketsJob(
     }
 
 
-    private void SendNotificationCompleteMoveTicket(int excuteTime, List<Match> matchesSuccess, List<Match> matchesFail)
+    private void SendNotificationCompleteMoveTicket(List<Match> matchesSuccess, List<Match> matchesFail)
     {
-        var notificationContent = notificationContentService.CreateExecutionSummaryContent(excuteTime, matchesSuccess, matchesFail);
+        var notificationContent = notificationContentService.CreateExecutionSummaryContent(matchesSuccess, matchesFail);
         Fanex.Logging.LogService.Info($"SendNotificationCompleteMoveTicket with content {notificationContent}");
         var notificationModel = new NotificationModel
         {
