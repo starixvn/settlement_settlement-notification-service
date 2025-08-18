@@ -23,6 +23,7 @@ public class GetMatchesReadyToMoveHandler(
     {
         var criteria = new GetMatchesReadyToMoveCriteria();
         var matches = await repository.FetchAsync<Match>(criteria);
+
         var (_, response) = await cache.TryGetAsync<string>(KEY_LEAGUEIDS_TEST);
         var leagueIds = (response ?? "").Split(",");
 

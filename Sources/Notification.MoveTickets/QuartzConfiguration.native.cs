@@ -36,27 +36,4 @@ public static class QuartzConfiguration
 
         return services;
     }
-
-    private static void ConfigureMatchReadyToMoveJob(IServiceCollectionQuartzConfigurator quartzConfigurator, JobSchedule jobSchedule)
-    {
-        var jobKey = new JobKey(nameof(MatchReadyToMoveJob));
-        RegisterJobWithCronTrigger<MatchReadyToMoveJob>(quartzConfigurator, jobKey, jobSchedule.CronExpression);
-    }
-
-    private static void ConfigureMoveTicketsJob(IServiceCollectionQuartzConfigurator quartzConfigurator, JobSchedule jobSchedule)
-    {
-        var jobKey = new JobKey(nameof(MoveTicketsJob));
-        RegisterJobWithCronTrigger<MoveTicketsJob>(quartzConfigurator, jobKey, jobSchedule.CronExpression);
-    }
-
-    private static void RegisterJobWithCronTrigger<T>(IServiceCollectionQuartzConfigurator quartzConfigurator, JobKey jobKey, string cronExpression) where T : IJob
-    {
-        quartzConfigurator.AddJob<T>(jobOptions => jobOptions.WithIdentity(jobKey));
-
-        quartzConfigurator.AddTrigger(triggerOptions => triggerOptions
-            .ForJob(jobKey)
-            .WithIdentity($"{jobKey.Name}Trigger")
-        //.StartNow());
-        .WithCronSchedule(cronExpression));
-    }
 }

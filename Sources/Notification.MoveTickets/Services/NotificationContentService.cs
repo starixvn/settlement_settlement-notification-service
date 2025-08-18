@@ -18,7 +18,11 @@ public class NotificationContentService : INotificationContentService
     public string CreateExecutionSummaryContent(List<Match> matchesSuccess, List<Match> matchesFail)
     {
         var contentBuilder = new StringBuilder();
-        contentBuilder.AppendLine(string.Format(MoveTicketsMessages.ContentTemplates.ExecutionSummaryHeader, DateTimeOffset.Now));
+        var date = DateTimeOffset.Now;
+        var offsetHours = date.Offset.Hours;
+        string executeTime = date.ToString("MMM dd, yyyy HH:mm:ss") + $" GMT{offsetHours:+#;-#;+0}";
+
+        contentBuilder.AppendLine(string.Format(MoveTicketsMessages.ContentTemplates.ExecutionSummaryHeader, executeTime));
 
         if (matchesSuccess.Count > 0)
         {
