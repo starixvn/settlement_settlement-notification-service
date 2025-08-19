@@ -1,5 +1,6 @@
 ﻿namespace SettlementNotification.Services;
 
+using Microsoft.Extensions.Logging;
 using Models;
 
 public interface NotificationService
@@ -12,13 +13,14 @@ public class NotificationServiceImp(
     QueryService queryService,
     SendMessageService sendMessageService,
     NotificationPoolService notificationPoolService,
-    ILogger logger)
+    ILogger<NotificationService> logger)
     : NotificationService
 {
     public void Notify(NotificationModel notificationModel)
     {
         try
         {
+            logger.LogInformation($"Sending notification for MatchId: {notificationModel.MatchId}, MessageId: {notificationModel.MessageContent}");
             notificationModel.RefDataService = refDataService;
             sendMessageService.Send(notificationModel);
             queryService.UpdateFlag(notificationModel.MessageId);
@@ -30,7 +32,10 @@ public class NotificationServiceImp(
                 .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
                 .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
                 .ToString();
-            logger.Error(logMessage);
+
+
+            logger.LogError(logMessage, exception);
+
         }
         finally
         {

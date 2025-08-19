@@ -16,8 +16,10 @@ public class MoveTicketsJob(
     NotificationService notificationService,
     INotificationContentService notificationContentService) : IJob
 {
+
     public async Task Execute(IJobExecutionContext context)
     {
+        Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTimeOffset.UtcNow}");
         try
         {
             var setting = await autoMoveStatusService.GetAutoMoveStatus();
@@ -50,7 +52,7 @@ public class MoveTicketsJob(
         }
         catch (Exception ex)
         {
-            Fanex.Logging.LogService.Error(ex.Message, ex);
+            Fanex.Logging.LogService.Error($"MoveTicketsJob {ex.Message}", ex);
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using Fanex.Data.Repository;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Notification.MoveTickets.Models;
 using SettlementNotification.Models;
@@ -13,7 +14,8 @@ public interface IGetMatchTicketInfoHandler
 
 public class GetMatchTicketInfoHandler(
     IDynamicRepository repository,
-    IOptions<AppSettingsKey> settingOptions) : IGetMatchTicketInfoHandler
+    IOptions<AppSettingsKey> settingOptions,
+    ILogger<GetMatchTicketInfoHandler> logger) : IGetMatchTicketInfoHandler
 {
     public async Task<List<TicketInfo>> HandleAsync(List<Match> matches)
     {
@@ -21,6 +23,7 @@ public class GetMatchTicketInfoHandler(
         {
             return [];
         }
+
 
         var result = matches.SelectMany(match => match.ResourceIds.Select(resourceId =>
              new GetMatchTicketResource
@@ -36,6 +39,8 @@ public class GetMatchTicketInfoHandler(
         {
             ResourceInfo = json
         };
+
+        logger.LogInformation($"GetMatchTicketInfoHandler criteria ResourceInfo: {json}");
 
         var allTicketInfos = await GetAllTicketInfosFromAllSites(criteria);
 

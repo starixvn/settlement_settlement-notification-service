@@ -1,4 +1,6 @@
-﻿namespace Notification.MoveTickets.Models;
+﻿using System.Text.Json;
+
+namespace Notification.MoveTickets.Models;
 
 public class Match
 {
@@ -16,6 +18,15 @@ public class Match
     public List<string> ResourceIds { get; set; } = [];
 
     public RemarkSettingModel Remark => new(SettlementStatus);
+
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+    }
 }
 
 public class RemarkSettingModel

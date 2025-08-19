@@ -18,6 +18,7 @@ public class MatchesReadyToMoveService(
         var allMatches = await getMatchesHandler.HandleAsync();
         var ticketInfos = await getMatchTicketInfoHandler.HandleAsync(allMatches);
 
+
         return [.. allMatches.Where(match => HasTickets(match.MatchId, ticketInfos))];
     }
 

@@ -1,5 +1,6 @@
 ﻿using Fanex.Caching;
 using Fanex.Data.Repository;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Notification.MoveTickets.Features.GetMatchesReadyToMove;
 using Notification.MoveTickets.Models;
@@ -15,13 +16,14 @@ public class GetMatchesReadyToMoveHandlerTests
     private readonly IOptions<AppSettingsKey> appSettingsKey;
     private readonly ICache cache;
     private readonly GetMatchesReadyToMoveHandler handler;
+    private readonly ILogger<GetMatchesReadyToMoveHandler> logger = Substitute.For<ILogger<GetMatchesReadyToMoveHandler>>();
 
     public GetMatchesReadyToMoveHandlerTests()
     {
         repository = Substitute.For<IDynamicRepository>();
         appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
         cache = Substitute.For<ICache>();
-        handler = new GetMatchesReadyToMoveHandler(repository, appSettingsKey, cache);
+        handler = new GetMatchesReadyToMoveHandler(repository, appSettingsKey, cache, logger);
     }
 
     [Fact]

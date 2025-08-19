@@ -1,4 +1,5 @@
 ﻿using Fanex.Data.Repository;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Notification.MoveTickets.Features.GetMatchTicketInfo;
 using Notification.MoveTickets.Models;
@@ -13,6 +14,7 @@ public class GetMatchTicketInfoHandlerTests
     private readonly IDynamicRepository repositorySub;
     private readonly IOptions<AppSettingsKey> settingOptionsSub;
     private readonly GetMatchTicketInfoHandler handler;
+    private readonly ILogger<GetMatchTicketInfoHandler> logger = Substitute.For<ILogger<GetMatchTicketInfoHandler>>();
 
     public GetMatchTicketInfoHandlerTests()
     {
@@ -25,7 +27,7 @@ public class GetMatchTicketInfoHandlerTests
         };
         settingOptionsSub.Value.Returns(appSettings);
 
-        handler = new GetMatchTicketInfoHandler(repositorySub, settingOptionsSub);
+        handler = new GetMatchTicketInfoHandler(repositorySub, settingOptionsSub, logger);
     }
 
     [Fact]
