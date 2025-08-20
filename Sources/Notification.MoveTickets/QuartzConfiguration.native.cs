@@ -24,14 +24,14 @@ public static class QuartzConfiguration
             );
 
 
-            //var moveTicketsJob = new JobKey("MoveTicketsJob");
-            //q.AddJob<MoveTicketsJob>(opts => opts.WithIdentity(moveTicketsJob));
+            var moveTicketsJob = new JobKey("MoveTicketsJob");
+            q.AddJob<MoveTicketsJob>(opts => opts.WithIdentity(moveTicketsJob));
 
-            //q.AddTrigger(opts => opts
-            //    .ForJob(moveTicketsJob)
-            //    .WithIdentity("MoveTicketsJob-trigger")
-            //    .WithCronSchedule(moveTicketsJobSettings.MoveTicketsJob.CronExpression)
-            //);
+            q.AddTrigger(opts => opts
+                .ForJob(moveTicketsJob)
+                .WithIdentity("MoveTicketsJob-trigger")
+                .WithCronSchedule(moveTicketsJobSettings.MoveTicketsJob.CronExpression)
+            );
         });
 
         return services;
