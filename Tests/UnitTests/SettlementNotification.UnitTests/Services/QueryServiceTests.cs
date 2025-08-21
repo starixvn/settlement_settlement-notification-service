@@ -1,5 +1,4 @@
 ﻿using Fanex.Caching;
-using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -7,7 +6,6 @@ using SettlementNotification.Constants;
 using SettlementNotification.Criteria;
 using SettlementNotification.Models;
 using SettlementNotification.Services;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -17,12 +15,7 @@ namespace SettlementNotification.UnitTests.Services;
 public class QueryServiceTests
 {
     private readonly IDynamicRepository repository = Substitute.For<IDynamicRepository>();
-
-    private readonly ICache cache = new RedisCache(new RedisCacheOptions
-    {
-        ConnectionString = "10.18.200.195:16379,password=foo1@bared,defaultDatabase=11",
-        ApplicationName = "Settlement-LOCAL"
-    });
+    private readonly ICacheService cache = Substitute.For<ICacheService>();
 
     [Fact]
     public async Task GetAllMessage_ProAndLeagueIdOnCache_ReturnsRightNotification()
@@ -43,10 +36,9 @@ public class QueryServiceTests
         };
 
         repository.FetchAsync<NotificationModel>(Arg.Any<GetAllMessageCriteria>()).Returns(list);
-        const int cacheExpiredInDays = 1095;
-        var cachePolicy = new CacheItemOptions().SetAbsoluteExpiration(TimeSpan.FromDays(cacheExpiredInDays));
 
-        await cache.SetAsync(CacheKeys.KeyLeagueId, 1, cachePolicy);
+        // Mock cache to return league ID 1
+        cache.TryGetAsync<int>(CacheKeys.KeyLeagueId).Returns((true, 1));
 
         var settings = new AppSettingsKey()
         {
@@ -82,9 +74,9 @@ public class QueryServiceTests
         };
 
         repository.FetchAsync<NotificationModel>(Arg.Any<GetAllMessageCriteria>()).Returns(list);
-        const int cacheExpiredInDays = 1095;
-        var cachePolicy = new CacheItemOptions().SetAbsoluteExpiration(TimeSpan.FromDays(cacheExpiredInDays));
-        await cache.SetAsync(CacheKeys.KeyLeagueId, 1, cachePolicy);
+
+        // Mock cache to return league ID 1
+        cache.TryGetAsync<int>(CacheKeys.KeyLeagueId).Returns((true, 1));
 
         var settings = new AppSettingsKey()
         {
@@ -120,9 +112,9 @@ public class QueryServiceTests
         };
 
         repository.FetchAsync<NotificationModel>(Arg.Any<GetAllMessageCriteria>()).Returns(list);
-        const int cacheExpiredInDays = 1095;
-        var cachePolicy = new CacheItemOptions().SetAbsoluteExpiration(TimeSpan.FromDays(cacheExpiredInDays));
-        await cache.SetAsync(CacheKeys.KeyLeagueId, 1, cachePolicy);
+
+        // Mock cache to return league ID 1
+        cache.TryGetAsync<int>(CacheKeys.KeyLeagueId).Returns((true, 1));
 
         var settings = new AppSettingsKey()
         {

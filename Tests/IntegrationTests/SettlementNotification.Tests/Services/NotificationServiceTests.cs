@@ -1,6 +1,6 @@
 ﻿using Fanex.LetstalkService.Client;
-using Fanex.Logging;
 using Fanex.RemotingRef;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using SettlementNotification.Constants;
@@ -27,7 +27,7 @@ public class NotificationServiceTests
         var queryService = Substitute.For<QueryService>();
         var notificationPoolService = Substitute.For<NotificationPoolService>();
         var contentService = new ContentServiceImp();
-        var loggerService = Substitute.For<ILogger>();
+        var loggerService = Substitute.For<ILogger<NotificationServiceImp>>();
         var settings = new AppSettingsKey()
         {
             Letstalk = new LetstalkSettings

@@ -5,9 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using ONEbook.UM.Services;
 using SettlementNotification.Services;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fanex.SettlementNotification.Service;
 

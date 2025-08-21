@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SettlementNotification.Services;
 using StackExchange.Redis;
-using System;
 
 namespace Fanex.SettlementNotification.Service;
 
@@ -19,6 +18,7 @@ public static class AutoInjector
         services.AddTransient<ILogger, Logger>();
         services.AddTransient<RefDataService, RefDataServiceImp>();
         services.AddTransient<IRemotingRefService, RemotingRefService>();
+        services.AddSingleton<ICacheService, CacheService>();
         services.AddSingleton<AutoNotificationController, AutoNotificationControllerImp>();
         services.AddSingleton<IDynamicRepository, DynamicRepository>();
         services.AddSingleton<ContentService, ContentServiceImp>();
@@ -29,6 +29,7 @@ public static class AutoInjector
         services.AddSingleton<SendMessageService, SendMessageServiceImp>();
         services.AddSingleton<MatchService, MatchServiceImp>();
         services.AddSingleton<ConfirmRefundService, ConfirmRefundServiceImp>();
+        services.AddTransient<ISettleLogService, SettleLogService>();
 
         AppConfigService.Config.LetstalkServiceApi = configuration.GetSection("Letstalk:ServiceUri").Value;
         RefDataTypeContainer
@@ -38,16 +39,14 @@ public static class AutoInjector
 
     public static void AddConfigRedisCache(this IServiceCollection services, IConfiguration configuration)
     {
-        var redisConfig = configuration.GetSection("AuthSettings:RedisConfig").Value;
-        var applicationName = configuration.GetSection("AuthSettings:ChannelPrefix").Value;
-
+        var redisConfig = configuration.GetSection("Fanex.Caching.Redis.Ex:RedisConfig").Value;
+        var channelPrefix = configuration.GetSection("Fanex.Caching.Redis.Ex:ChannelPrefix").Value;
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{redisConfig}"));
-
         services.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
             ConnectionString = redisConfig,
-            ApplicationName = applicationName,
+            ApplicationName = channelPrefix,
         }));
-        services.AddSingleton<ICacheService>(new CacheService());
+        services.AddRedisCache(configuration.GetSection("Fanex.Caching.Redis"));
     }
 }

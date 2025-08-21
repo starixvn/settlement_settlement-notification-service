@@ -2,6 +2,7 @@ FROM hub.nexdev.net/base/dotnet/core/sdk:9.0-alpine AS builder
 WORKDIR /src
 
 COPY ./Sources/SettlementNotification ./SettlementNotification
+COPY ./Sources/Notification.MoveTickets ./Notification.MoveTickets
 COPY ./Sources/Fanex.SettlementNotification.Service/Fanex.SettlementNotification.Service.csproj ./Fanex.SettlementNotification.Service/Fanex.SettlementNotification.Service.csproj
 
 WORKDIR /src/Fanex.SettlementNotification.Service
@@ -19,5 +20,16 @@ FROM hub.nexdev.net/base/dotnet/core/aspnet:9.0-alpine AS base
 WORKDIR /app
 
 COPY --from=builder /app .
+
+ENV TZ="America/La_Paz"
+ENV COMPlus_EnableDiagnostics=0
+
+# Don t run as root
+RUN adduser --disabled-password \
+  --home /app \
+  --gecos '' dotnetuser && chown -R dotnetuser /app && chown -R dotnetuser /tmp
+USER dotnetuser
+#
+
 
 ENTRYPOINT ["dotnet", "Fanex.SettlementNotification.Service.dll"]
