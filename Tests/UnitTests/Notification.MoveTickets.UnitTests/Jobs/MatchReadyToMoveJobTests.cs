@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Notification.MoveTickets.Jobs;
 using Notification.MoveTickets.Services;
 using NSubstitute;
@@ -15,7 +14,6 @@ public class MatchReadyToMoveJobTests
     private readonly INotificationContentService notificationContentService;
     private readonly MatchReadyToMoveJob job;
     private readonly IJobExecutionContext jobContext;
-    private readonly ILogger<MatchReadyToMoveJob> logger = Substitute.For<ILogger<MatchReadyToMoveJob>>();
 
     public MatchReadyToMoveJobTests()
     {
@@ -27,8 +25,7 @@ public class MatchReadyToMoveJobTests
             notificationService,
             matchesReadyToMoveService,
             autoMoveStatusService,
-            notificationContentService,
-            logger);
+            notificationContentService);
         jobContext = Substitute.For<IJobExecutionContext>();
     }
 

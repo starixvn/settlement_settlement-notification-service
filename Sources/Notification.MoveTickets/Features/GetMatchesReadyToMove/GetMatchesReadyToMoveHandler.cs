@@ -1,6 +1,5 @@
 ﻿using Fanex.Caching;
 using Fanex.Data.Repository;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Notification.MoveTickets.Models;
 using SettlementNotification.Models;
@@ -15,9 +14,7 @@ public interface IGetMatchesReadyToMoveHandler
 public class GetMatchesReadyToMoveHandler(
     IDynamicRepository repository,
     IOptions<AppSettingsKey> appSettingsKey,
-    ICache cache,
-    ILogger<GetMatchesReadyToMoveHandler> logger
- ) : IGetMatchesReadyToMoveHandler
+    ICache cache) : IGetMatchesReadyToMoveHandler
 {
     private const string KEY_LEAGUEIDS_TEST = "Settlement-AutoSettle-LeagueIds";
 
@@ -26,11 +23,8 @@ public class GetMatchesReadyToMoveHandler(
         var criteria = new GetMatchesReadyToMoveCriteria();
         var matches = await repository.FetchAsync<Match>(criteria);
 
-
-
         var (_, response) = await cache.TryGetAsync<string>(KEY_LEAGUEIDS_TEST);
         var leagueIds = (response ?? "").Split(",");
-        logger.LogInformation($"GetMatchesReadyToMoveHandler found {response} {string.Join(", ", matches.Select(x => x.ToString()))} matches ready to move.");
 
 
         var newMatches = matches
@@ -58,9 +52,6 @@ public class GetMatchesReadyToMoveHandler(
             "UAT" => [.. newMatches.Where(m => leagueIds.Contains(m.LeagueId.ToString()))],
             _ => newMatches
         };
-
-        logger.LogInformation($"GetMatchesReadyToMoveHandler found {string.Join(", ", matches.Select(x => x.ToString()))} matches ready to move.");
-
 
         return [.. filteredMatches];
     }

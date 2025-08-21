@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Notification.MoveTickets.Constants;
+﻿using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
@@ -14,8 +13,7 @@ public class MatchReadyToMoveJob(
     NotificationService notificationService,
     IMatchesReadyToMoveService matchesReadyToMoveService,
     IAutoMoveStatusService autoMoveStatusService,
-    INotificationContentService notificationContentService,
-    ILogger<MatchReadyToMoveJob> logger) : IJob
+    INotificationContentService notificationContentService) : IJob
 {
 
     public async Task Execute(IJobExecutionContext context)
@@ -27,7 +25,6 @@ public class MatchReadyToMoveJob(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error occurred in MatchReadyToMoveJob");
             Fanex.Logging.LogService.Error($"MatchReadyToMoveJob {ex.Message}", ex);
         }
     }
@@ -36,7 +33,6 @@ public class MatchReadyToMoveJob(
     {
         var isAutoMoveEnabled = await autoMoveStatusService.GetAutoMoveStatus();
         var eligibleMatches = await matchesReadyToMoveService.GetEligibleMatches();
-        logger.LogInformation($"MatchReadyToMoveJob started at {DateTimeOffset.UtcNow} with {eligibleMatches.Count} eligible matches and auto move setting: {isAutoMoveEnabled}");
         Fanex.Logging.LogService.Info($"MatchReadyToMoveJob started at {DateTimeOffset.UtcNow} with eligibleMatches {string.Join(", ", eligibleMatches.Select(x => x.MatchId))} and setting {isAutoMoveEnabled}");
 
         if (eligibleMatches.Count == 0)

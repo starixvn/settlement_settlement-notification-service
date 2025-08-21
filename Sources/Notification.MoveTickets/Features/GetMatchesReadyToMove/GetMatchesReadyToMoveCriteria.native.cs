@@ -5,8 +5,6 @@ namespace Notification.MoveTickets.Features.GetMatchesReadyToMove;
 public class GetMatchesReadyToMoveCriteria : CriteriaBase
 {
     public DateTime EventDate { get; set; } = DateTimeOffset.Now.Date;
-    //public DateTime EventDate { get; set; } = DateTimeOffset.Now.Date.AddDays(-1);
-
 
     public override string GetSettingKey() => "NAP_Admin_Settlement_AutoMove_MatchInfo";
 

@@ -37,9 +37,6 @@ public class MoveTicketsJob(
 
             var (successfulMatches, failedMatches) = await ProcessMatches(matches);
 
-            Fanex.Logging.LogService.Info($"MoveTicketsJob matches {string.Join(", ", successfulMatches.Select(x => x.MatchId))}");
-            Fanex.Logging.LogService.Info($"MoveTicketsJob  fail {string.Join(", ", failedMatches.Select(x => x.MatchId))}");
-
             if (failedMatches.Count == 0 && successfulMatches.Count == 0)
             {
                 SendNotifycationNoMatchMoveSucess();
