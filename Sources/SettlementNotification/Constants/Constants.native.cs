@@ -7,8 +7,12 @@ public static class MessageGroup
     public const int FastMarket = 2;
 
     public const int ConfirmRefund = 3;
+
     public const int MatchReadyToMove = 4;
+
     public const int MoveTicket = 5;
+
+    public const int HybridParlay = 6;
 }
 
 public static class LetstalkGroup

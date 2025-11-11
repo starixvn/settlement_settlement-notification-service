@@ -20,7 +20,6 @@ public class NotificationServiceImp(
     {
         try
         {
-            logger.LogInformation($"Sending notification for MatchId: {notificationModel.MatchId}, MessageId: {notificationModel.MessageContent}");
             notificationModel.RefDataService = refDataService;
             sendMessageService.Send(notificationModel);
             queryService.UpdateFlag(notificationModel.MessageId);
@@ -33,9 +32,7 @@ public class NotificationServiceImp(
                 .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(exception))
                 .ToString();
 
-
             logger.LogError(logMessage, exception);
-
         }
         finally
         {
