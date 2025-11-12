@@ -1,4 +1,5 @@
-﻿using Notification.MoveTickets.Constants;
+﻿using Fanex.Logging;
+using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
@@ -16,14 +17,11 @@ public class MoveTicketsJob(
     NotificationService notificationService,
     INotificationContentService notificationContentService) : IJob
 {
-
     public async Task Execute(IJobExecutionContext context)
     {
-        Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTimeOffset.UtcNow}");
         try
         {
             var setting = await autoMoveStatusService.GetAutoMoveStatus();
-            Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTimeOffset.UtcNow} with {setting}");
 
             if (!setting)
             {
@@ -32,8 +30,7 @@ public class MoveTicketsJob(
             }
 
             var matches = await matchesReadyToMoveService.GetEligibleMatches();
-            Fanex.Logging.LogService.Info($"MoveTicketsJob started at {DateTimeOffset.UtcNow} with {setting} and matches {string.Join(", ", matches.Select(x => x.MatchId))}");
-
+            await LogService.InfoAsync($"MoveTicketsJob started at {DateTimeOffset.UtcNow} with {setting} and matches {string.Join(", ", matches.Select(x => x.MatchId))}");
 
             var (successfulMatches, failedMatches) = await ProcessMatches(matches);
 
@@ -43,13 +40,12 @@ public class MoveTicketsJob(
             }
             else
             {
-
                 SendNotificationCompleteMoveTicket(successfulMatches, failedMatches);
             }
         }
         catch (Exception ex)
         {
-            Fanex.Logging.LogService.Error($"MoveTicketsJob {ex.Message}", ex);
+            await LogService.ErrorAsync($"MoveTicketsJob {ex.Message}");
         }
     }
 
@@ -60,7 +56,6 @@ public class MoveTicketsJob(
 
         foreach (var match in matches)
         {
-
             var result = await moveTicketService.ProcessMoveTicket(match);
             if (result)
             {
@@ -70,17 +65,14 @@ public class MoveTicketsJob(
             {
                 failedMatches.Add(match);
             }
-
         }
 
         return (successfulMatches, failedMatches);
     }
 
-
     private void SendNotificationCompleteMoveTicket(List<Match> matchesSuccess, List<Match> matchesFail)
     {
         var notificationContent = notificationContentService.CreateExecutionSummaryContent(matchesSuccess, matchesFail);
-        Fanex.Logging.LogService.Info($"SendNotificationCompleteMoveTicket with content {notificationContent}");
         var notificationModel = new NotificationModel
         {
             ActionName = MoveTicketsMessages.ActionNames.AutoMoveTickets,

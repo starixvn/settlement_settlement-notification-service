@@ -8,13 +8,12 @@ namespace Notification.MoveTickets.Services;
 public interface INotificationContentService
 {
     string CreateNotificationContent(List<Match> matches, bool isAutoMoveEnabled);
-    string CreateExecutionSummaryContent(List<Match> matchesSuccess, List<Match> matchesFail);
 
+    string CreateExecutionSummaryContent(List<Match> matchesSuccess, List<Match> matchesFail);
 }
 
 public class NotificationContentService : INotificationContentService
 {
-
     public string CreateExecutionSummaryContent(List<Match> matchesSuccess, List<Match> matchesFail)
     {
         var contentBuilder = new StringBuilder();
@@ -30,7 +29,6 @@ public class NotificationContentService : INotificationContentService
             AppendSportMatches(contentBuilder, "Baseball", GetMatchesBySport(matchesSuccess, SportType.Baseball));
             AppendSportMatches(contentBuilder, "Cricket", GetMatchesBySport(matchesSuccess, SportType.Cricket));
         }
-
 
         if (matchesFail.Count > 0)
         {
@@ -64,8 +62,6 @@ public class NotificationContentService : INotificationContentService
 
     private static List<Match> GetMatchesBySport(List<Match> matches, short sportType)
     => [.. matches.Where(match => match.SportType == sportType)];
-
-
 
     private static bool IsMatchOnHold(RemarkSettingModel remark)
     {
@@ -144,8 +140,6 @@ public class NotificationContentService : INotificationContentService
         builder.AppendLine(MoveTicketsMessages.ExecutionMessages.Unresolved);
         builder.AppendLine(MoveTicketsMessages.ExecutionMessages.NewMatch);
     }
-
-
 }
 
 public class MatchCategories

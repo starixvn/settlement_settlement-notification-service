@@ -31,7 +31,6 @@ public static class MoveTicketsMessages
         public const string NoMatchEligible = "System detect 0 match eligible to move tickets.";
         public const string NoMatchMovie = "Auto move tickets has not been executed due to no match is quailfied to move.";
 
-        // New execution summary templates
         public const string ExecutionSummaryHeader = "Auto move tickets of settled results service has been executed on {0}.";
         public const string SuccessfulMovesHeader = "Successful moving tickets for:";
         public const string FailedMovesHeader = "Failed moving tickets for:";

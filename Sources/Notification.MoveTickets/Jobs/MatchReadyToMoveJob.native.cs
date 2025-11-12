@@ -1,4 +1,5 @@
-﻿using Notification.MoveTickets.Constants;
+﻿using Fanex.Logging;
+using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
@@ -23,7 +24,7 @@ public class MatchReadyToMoveJob(
         }
         catch (Exception ex)
         {
-            Fanex.Logging.LogService.Error($"MatchReadyToMoveJob {ex.Message}", ex);
+            await LogService.ErrorAsync($"MatchReadyToMoveJob {ex.Message}");
         }
     }
 
