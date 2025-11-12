@@ -40,8 +40,7 @@ public class NotificationModel
             return MessageGroupId switch
             {
                 MessageGroup.Instant => "Instant Settlement",
-                MessageGroup.FastMarket => "Settlement",
-                MessageGroup.ConfirmRefund => "Settlement",
+                MessageGroup.FastMarket or MessageGroup.ConfirmRefund or MessageGroup.HybridParlay => "Settlement",
                 _ => string.Empty
             };
         }

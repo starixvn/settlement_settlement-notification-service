@@ -1,4 +1,5 @@
-﻿using Notification.MoveTickets.Constants;
+﻿using Fanex.Logging;
+using Notification.MoveTickets.Constants;
 using Notification.MoveTickets.Models;
 using Notification.MoveTickets.Services;
 using Quartz;
@@ -15,17 +16,15 @@ public class MatchReadyToMoveJob(
     IAutoMoveStatusService autoMoveStatusService,
     INotificationContentService notificationContentService) : IJob
 {
-
     public async Task Execute(IJobExecutionContext context)
     {
-        Fanex.Logging.LogService.Info($"MatchReadyToMoveJob started at {DateTimeOffset.UtcNow}");
         try
         {
             await ProcessMatchReadyToMove();
         }
         catch (Exception ex)
         {
-            Fanex.Logging.LogService.Error($"MatchReadyToMoveJob {ex.Message}", ex);
+            await LogService.ErrorAsync($"MatchReadyToMoveJob {ex.Message}");
         }
     }
 
@@ -33,7 +32,6 @@ public class MatchReadyToMoveJob(
     {
         var isAutoMoveEnabled = await autoMoveStatusService.GetAutoMoveStatus();
         var eligibleMatches = await matchesReadyToMoveService.GetEligibleMatches();
-        Fanex.Logging.LogService.Info($"MatchReadyToMoveJob started at {DateTimeOffset.UtcNow} with eligibleMatches {string.Join(", ", eligibleMatches.Select(x => x.MatchId))} and setting {isAutoMoveEnabled}");
 
         if (eligibleMatches.Count == 0)
         {
@@ -64,7 +62,6 @@ public class MatchReadyToMoveJob(
         };
 
         notificationService.Notify(model);
-
     }
 
     private static NotificationModel CreateNotificationModel(string content)
@@ -78,5 +75,4 @@ public class MatchReadyToMoveJob(
             LetstalkGroup = LetstalkGroup.Notification
         };
     }
-
 }
