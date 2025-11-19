@@ -30,8 +30,6 @@ public class MoveTicketsJob(
             }
 
             var matches = await matchesReadyToMoveService.GetEligibleMatches();
-            await LogService.InfoAsync($"MoveTicketsJob started at {DateTimeOffset.UtcNow} with {setting} and matches {string.Join(", ", matches.Select(x => x.MatchId))}");
-
             var (successfulMatches, failedMatches) = await ProcessMatches(matches);
 
             if (failedMatches.Count == 0 && successfulMatches.Count == 0)
