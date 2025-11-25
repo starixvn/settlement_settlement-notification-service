@@ -12,7 +12,9 @@ public static class MessageGroup
 
     public const int MoveTicket = 5;
 
-    public const int HybridParlay = 6;
+    public const int AutoRefundFastMarket = 6;
+
+    public const int HybridParlay = 7;
 }
 
 public static class LetstalkGroup
