@@ -57,8 +57,7 @@ public class MatchReadyToMoveJob(
             ActionName = MoveTicketsMessages.ActionNames.AutoMoveTickets,
             MessageContent = MoveTicketsMessages.ContentTemplates.NoMatchEligible,
             MessageType = MoveTicketsMessages.MessageTypes.Reminder,
-            MessageGroupId = MessageGroup.MatchReadyToMove,
-            LetstalkGroup = LetstalkGroup.Notification
+            MessageGroupId = MessageGroup.MatchReadyToMove
         };
 
         notificationService.Notify(model);
@@ -71,8 +70,7 @@ public class MatchReadyToMoveJob(
             ActionName = MoveTicketsMessages.ActionNames.AutoMoveTickets,
             MessageContent = content,
             MessageType = MoveTicketsMessages.MessageTypes.Reminder,
-            MessageGroupId = MessageGroup.MatchReadyToMove,
-            LetstalkGroup = LetstalkGroup.Notification
+            MessageGroupId = MessageGroup.MatchReadyToMove
         };
     }
 }

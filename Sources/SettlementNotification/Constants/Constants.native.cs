@@ -12,15 +12,17 @@ public static class MessageGroup
 
     public const int MoveTicket = 5;
 
-    public const int HybridParlay = 6;
+    public const int AutoRefundFastMarket = 6;
+
+    public const int HybridParlay = 7;
 }
 
-public static class LetstalkGroup
-{
-    public const int Notification = 1;
+//public static class LetstalkGroup
+//{
+//    public const int Notification = 1;
 
-    public const int RefundReminder = 2;
-}
+//    public const int RefundReminder = 2;
+//}
 
 public static class SportType
 {

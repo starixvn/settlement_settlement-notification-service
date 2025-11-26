@@ -1,5 +1,4 @@
-﻿using SettlementNotification.Constants;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace SettlementNotification.Services;
 
@@ -16,10 +15,6 @@ public class AutoNotificationControllerImp(
     public async Task Process()
     {
         var list = await notificationPoolService.PeekNewItem();
-        list.ForEach(m =>
-        {
-            m.LetstalkGroup = LetstalkGroup.Notification;
-            notificationService.Notify(m);
-        });
+        list.ForEach(notificationService.Notify);
     }
 }

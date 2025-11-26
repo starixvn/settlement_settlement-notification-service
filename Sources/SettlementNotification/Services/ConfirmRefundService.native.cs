@@ -2,7 +2,6 @@
 using SettlementNotification.Criteria;
 using SettlementNotification.Models;
 using System.Threading.Tasks;
-using Log = Fanex.Logging.LogService;
 
 namespace SettlementNotification.Services;
 
@@ -49,7 +48,6 @@ public class ConfirmRefundServiceImp(
 
         if (criteria.ErrCode > 0)
         {
-            await Log.WarnAsync(criteria.ErrMsg, matchDetail, keyInfo);
             return;
         }
 
@@ -65,8 +63,7 @@ public class ConfirmRefundServiceImp(
             MessageId = criteria.MessageId,
             MessageType = criteria.MessageType,
             MessageGroupId = criteria.MessageGroupId,
-            IsTest = matchDetail.IsTest,
-            LetstalkGroup = LetstalkGroup.RefundReminder
+            IsTest = matchDetail.IsTest
         };
 
         notificationService.Notify(notificationModel);

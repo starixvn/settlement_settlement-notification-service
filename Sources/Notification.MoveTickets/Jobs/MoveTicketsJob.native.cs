@@ -76,8 +76,7 @@ public class MoveTicketsJob(
             ActionName = MoveTicketsMessages.ActionNames.AutoMoveTickets,
             MessageContent = notificationContent,
             MessageType = MoveTicketsMessages.MessageTypes.Reminder,
-            MessageGroupId = MessageGroup.MatchReadyToMove,
-            LetstalkGroup = LetstalkGroup.Notification
+            MessageGroupId = MessageGroup.MatchReadyToMove
         };
 
         notificationService.Notify(notificationModel);

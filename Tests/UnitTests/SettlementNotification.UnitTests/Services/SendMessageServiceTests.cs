@@ -30,7 +30,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.Notification,
             IsTest = false,
             MessageGroupId = MessageGroup.Instant
         };
@@ -58,7 +57,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.Notification,
             IsTest = false,
             MessageGroupId = MessageGroup.Instant
         };
@@ -84,7 +82,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.Notification,
             IsTest = true,
             MessageGroupId = MessageGroup.Instant
         };
@@ -110,7 +107,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.RefundReminder,
             IsTest = false,
             MessageGroupId = MessageGroup.ConfirmRefund
         };
@@ -136,7 +132,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.RefundReminder,
             IsTest = false,
             MessageGroupId = MessageGroup.ConfirmRefund
         };
@@ -162,7 +157,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.Notification,
             IsTest = false,
             MessageGroupId = MessageGroup.HybridParlay
         };
@@ -188,7 +182,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.Notification,
             IsTest = false,
             MessageGroupId = MessageGroup.HybridParlay
         };
@@ -214,7 +207,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.Notification,
             IsTest = false,
             MessageGroupId = MessageGroup.Instant
         };
@@ -240,7 +232,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.Notification,
             IsTest = false,
             MessageGroupId = MessageGroup.FastMarket
         };
@@ -266,7 +257,6 @@ public class SendMessageServiceTests
 
         var notificationModel = new NotificationModel
         {
-            LetstalkGroup = LetstalkGroup.Notification,
             IsTest = false,
             MessageGroupId = MessageGroup.Instant
         };
