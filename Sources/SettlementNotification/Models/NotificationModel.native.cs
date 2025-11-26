@@ -11,8 +11,6 @@ public class NotificationModel
 
     public RefDataService RefDataService { get; set; }
 
-    public int LetstalkGroup { get; set; }
-
     public int MessageId { get; init; }
 
     public int MatchId { get; set; }

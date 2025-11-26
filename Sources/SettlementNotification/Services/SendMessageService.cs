@@ -19,27 +19,19 @@ public class SendMessageServiceImp(
     public void Send(NotificationModel notificationModel)
     {
         var content = contentService.Content(notificationModel);
-        var (letstalkGroupName, environmentName) = GetLetstalkGroup(notificationModel.LetstalkGroup, notificationModel.IsTest, notificationModel.MessageGroupId);
+        var (letstalkGroupName, environmentName) = GetLetstalkGroup(notificationModel.IsTest, notificationModel.MessageGroupId);
         var subject = $"{environmentName}{notificationModel.MessageGroupName}";
         var messageModel = CreateLetstalkMessageModel(letstalkGroupName, subject, content);
         letstalkClientService.SendMessage(messageModel);
     }
 
-    private (string groupName, string environmentName) GetLetstalkGroup(int groupId, bool isTest, int messageGroupId)
+    private (string groupName, string environmentName) GetLetstalkGroup(bool isTest, int messageGroupId)
     {
         var settings = appSettingsKey.Value;
         var isProdEnvironment = settings.EnvironmentName.Equals("PRO") && !isTest;
         var environmentName = isProdEnvironment ? string.Empty : $"{settings.EnvironmentName} - ";
 
-        string groupName;
-        if (groupId == LetstalkGroup.RefundReminder)
-        {
-            groupName = isProdEnvironment ? settings.Letstalk.UserGroupRefund : settings.Letstalk.TestGroup;
-        }
-        else
-        {
-            groupName = GetNotificationGroupName(isProdEnvironment, messageGroupId);
-        }
+        var groupName = GetNotificationGroupName(isProdEnvironment, messageGroupId);
 
         return (groupName, environmentName);
     }
@@ -47,9 +39,19 @@ public class SendMessageServiceImp(
     private string GetNotificationGroupName(bool isProdEnvironment, int messageGroupId)
     {
         var settings = appSettingsKey.Value;
-        var prodGroupName = messageGroupId == MessageGroup.HybridParlay
-            ? settings.Letstalk.UserGroupHybridParlay
-            : settings.Letstalk.UserGroupNotification;
+        var prodGroupName = string.Empty;
+        if (messageGroupId == MessageGroup.HybridParlay)
+        {
+            prodGroupName = settings.Letstalk.UserGroupHybridParlay;
+        }
+        else if (messageGroupId == MessageGroup.ConfirmRefund)
+        {
+            prodGroupName = settings.Letstalk.UserGroupRefund;
+        }
+        else
+        {
+            prodGroupName = settings.Letstalk.UserGroupNotification;
+        }
 
         return isProdEnvironment ? prodGroupName : settings.Letstalk.TestGroup;
     }
