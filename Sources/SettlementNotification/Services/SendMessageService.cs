@@ -39,31 +39,24 @@ public class SendMessageServiceImp(
     private string GetNotificationGroupName(bool isProdEnvironment, int messageGroupId)
     {
         var settings = appSettingsKey.Value;
-        var prodGroupName = string.Empty;
-        if (messageGroupId == MessageGroup.HybridParlay)
+
+        var prodGroupName = messageGroupId switch
         {
-            prodGroupName = settings.Letstalk.UserGroupHybridParlay;
-        }
-        else if (messageGroupId == MessageGroup.ConfirmRefund)
-        {
-            prodGroupName = settings.Letstalk.UserGroupRefund;
-        }
-        else
-        {
-            prodGroupName = settings.Letstalk.UserGroupNotification;
-        }
+            MessageGroup.HybridParlay => settings.Letstalk.UserGroupHybridParlay,
+            MessageGroup.ConfirmRefund => settings.Letstalk.UserGroupRefund,
+            MessageGroup.AutoRefundFastMarket => settings.Letstalk.UserGroupRefundFastMarket,
+            _ => settings.Letstalk.UserGroupNotification
+        };
 
         return isProdEnvironment ? prodGroupName : settings.Letstalk.TestGroup;
     }
 
     private LetstalkModel CreateLetstalkMessageModel(string letstalkGroupName, string subject, string content)
-    {
-        return new LetstalkModel
+        => new LetstalkModel
         {
             TargetName = appSettingsKey.Value.Letstalk.TargetName,
             Subject = subject,
             Content = content,
             Group = letstalkGroupName
         };
-    }
 }
